@@ -85,15 +85,28 @@ Focus on technical accuracy and provide specific, actionable insights about what
       },
     ];
 
-    // Add image if path is provided and looks like a local file or supported URL
-    if (inputData.image_path && (inputData.image_path.startsWith('/') || inputData.image_path.startsWith('http'))) {
-      messages.push({
-        role: 'user',
-        content: [{
-          type: 'image',
-          image: inputData.image_path,
-        }],
-      });
+    // Add image - load as buffer if local file, otherwise use path/URL
+    if (inputData.image_path) {
+      if (inputData.image_path.startsWith('/')) {
+        // Local file - load as buffer
+        const imageBuffer = await fs.readFile(inputData.image_path);
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'image',
+            image: imageBuffer,
+          }],
+        });
+      } else {
+        // URL or other - use as string
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'image',
+            image: inputData.image_path,
+          }],
+        });
+      }
     }
 
     const response = await agent.generate(messages, {
