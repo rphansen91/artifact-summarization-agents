@@ -7,7 +7,7 @@ import { join } from 'path';
 import { getCurrentWeekCategories, getCurrentWeekPath, ensureCurrentWeekStructure } from '../utils/week-utils';
 
 const autoArtifactInputSchema = z.object({
-  image_path: z.string().describe('Path to the screenshot file'),
+  image_path: z.string().describe('Path or URL to the screenshot file'),
   notes: z.string().optional().describe('Optional freeform text describing the screenshot'),
 });
 
@@ -85,14 +85,16 @@ Focus on technical accuracy and provide specific, actionable insights about what
       },
     ];
 
-    // Add image
-    messages.push({
-      role: 'user',
-      content: [{
-        type: 'image',
-        image: inputData.image_path,
-      }],
-    });
+    // Add image if path is provided and looks like a local file or supported URL
+    if (inputData.image_path && (inputData.image_path.startsWith('/') || inputData.image_path.startsWith('http'))) {
+      messages.push({
+        role: 'user',
+        content: [{
+          type: 'image',
+          image: inputData.image_path,
+        }],
+      });
+    }
 
     const response = await agent.generate(messages, {
       structuredOutput: {
@@ -118,7 +120,11 @@ Focus on technical accuracy and provide specific, actionable insights about what
     await fs.writeFile(markdownPath, metadata.markdown, 'utf8');
 
     // Copy image file with new name
-    await fs.copyFile(inputData.image_path, imagePath);
+    if (inputData.image_path.startsWith('/')) {
+      await fs.copyFile(inputData.image_path, imagePath);
+    } else {
+      console.warn('Image path is not a local file, skipping image copy');
+    }
 
     // Extract week folder name from path
     const weekFolderName = currentWeekPath.split('/').pop() || 'unknown-week';
