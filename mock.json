@@ -1,0 +1,55 @@
+{
+  "input": {
+    "image_path": "/Users/ryanhansen/Desktop/Screenshot 2025-11-21 at 10.24.09 AM.png",
+    "notes": "Create a mac automation"
+  },
+  "status": "success",
+  "steps": {
+    "auto-analyze-artifact": {
+      "id": "auto-analyze-artifact",
+      "payload": {
+        "image_path": "/Users/ryanhansen/Desktop/Screenshot 2025-11-21 at 10.24.09 AM.png",
+        "notes": "Create a mac automation"
+      },
+      "startedAt": 1763767267226,
+      "status": "success",
+      "output": {
+        "category": "6-Product",
+        "filename": "mac-automation-folder-action-script.png",
+        "title": "Mac Automation with Folder Action Script",
+        "markdown": "# Mac Automation with Folder Action Script\n\nThis screenshot displays a macOS automation setup using Folder Actions. The interface shows a script being configured to run automatically when files are added to the Desktop. The script is a shell script executed in the `/bin/zsh` environment, iterating over files and invoking another script located at `~/bin/artifacts-categorize-file.sh`. This setup is part of macOS's Automator application, which allows users to automate repetitive tasks by creating workflows.\n\nThe significance of this artifact lies in its demonstration of how macOS users can leverage built-in tools to streamline file management tasks. By automating the categorization of files, users can enhance productivity and maintain better organization on their systems. This approach is particularly useful for users who frequently handle large volumes of files and need a systematic way to process them.\n\nThis artifact connects to broader themes of automation and productivity enhancement, showcasing practical applications of scripting within a user-friendly interface.",
+        "tags": [
+          "macos",
+          "automation",
+          "folder-action",
+          "shell-script",
+          "automator",
+          "productivity",
+          "file-management"
+        ],
+        "markdown_path": "/Users/ryanhansen/Documents/Artifacts/2025/Week_47_Nov17-Nov23/6-Product/mac-automation-folder-action-script.md",
+        "image_path": "/Users/ryanhansen/Documents/Artifacts/2025/Week_47_Nov17-Nov23/6-Product/mac-automation-folder-action-script.png",
+        "week_folder": "Week_47_Nov17-Nov23"
+      },
+      "endedAt": 1763767278277
+    }
+  },
+  "result": {
+    "category": "6-Product",
+    "filename": "mac-automation-folder-action-script.png",
+    "title": "Mac Automation with Folder Action Script",
+    "markdown": "# Mac Automation with Folder Action Script\n\nThis screenshot displays a macOS automation setup using Folder Actions. The interface shows a script being configured to run automatically when files are added to the Desktop. The script is a shell script executed in the `/bin/zsh` environment, iterating over files and invoking another script located at `~/bin/artifacts-categorize-file.sh`. This setup is part of macOS's Automator application, which allows users to automate repetitive tasks by creating workflows.\n\nThe significance of this artifact lies in its demonstration of how macOS users can leverage built-in tools to streamline file management tasks. By automating the categorization of files, users can enhance productivity and maintain better organization on their systems. This approach is particularly useful for users who frequently handle large volumes of files and need a systematic way to process them.\n\nThis artifact connects to broader themes of automation and productivity enhancement, showcasing practical applications of scripting within a user-friendly interface.",
+    "tags": [
+      "macos",
+      "automation",
+      "folder-action",
+      "shell-script",
+      "automator",
+      "productivity",
+      "file-management"
+    ],
+    "markdown_path": "/Users/ryanhansen/Documents/Artifacts/2025/Week_47_Nov17-Nov23/6-Product/mac-automation-folder-action-script.md",
+    "image_path": "/Users/ryanhansen/Documents/Artifacts/2025/Week_47_Nov17-Nov23/6-Product/mac-automation-folder-action-script.png",
+    "week_folder": "Week_47_Nov17-Nov23"
+  }
+}

@@ -20,21 +20,29 @@ if [[ "$BASENAME" != Screenshot* && "$BASENAME" != "Screen Shot"* ]]; then
 fi
 
 # 3. Ask for notes
-NOTES=$(osascript <<EOF
-set dlg to display dialog "Add any notes for this screenshot (optional):" default answer "" buttons {"Cancel","OK"} default button "OK"
-if button returned of dlg is "Cancel" then
+NOTES=$(osascript <<EOF 2>/dev/null
+try
+  set dlg to display dialog "Add any notes for this screenshot (optional):" default answer "" buttons {"Cancel","OK"} default button "OK"
+  if button returned of dlg is "Cancel" then
+    return "__CANCEL__"
+  else
+    return text returned of dlg
+  end if
+on error
   return "__CANCEL__"
-else
-  return text returned of dlg
-end if
+end try
 EOF
 )
+
+echo "NOTES: $NOTES"
 
 # If user canceled → do nothing
 if [ "$NOTES" = "__CANCEL__" ]; then
   echo "User cancelled — skipping workflow call."
   exit 0
 fi
+
+# Empty notes are OK, continue with workflow
 
 # 4. Construct payload using jq so everything is safely escaped
 PAYLOAD=$(jq -n \
@@ -55,5 +63,19 @@ RESPONSE=$(curl -s -X POST "$API_URL" \
 
 echo "RAW RESPONSE:"
 echo "$RESPONSE"
+
+# Check response status
+if [ -n "$RESPONSE" ]; then
+  STATUS=$(echo "$RESPONSE" | jq -r '.status // "unknown"' 2>/dev/null)
+  if [ "$STATUS" = "success" ]; then
+    echo "✅ Screenshot processed successfully!"
+    echo "Notification will appear shortly..."
+  else
+    echo "❌ Processing failed"
+    echo "Response: $RESPONSE"
+  fi
+else
+  echo "❌ No response received from API"
+fi
 
 exit 0

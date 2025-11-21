@@ -14,7 +14,7 @@ export const mastra = new Mastra({
   agents: { weatherAgent, artifactAgent },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
-    url: ":memory:",
+    url: "file:../../store/mastra.db",
   }),
   logger: new PinoLogger({
     name: 'Mastra',

@@ -4,7 +4,11 @@ import { metadataGenerationSchema } from '../agents/artifact-agent';
 import { MessageListInput } from '@mastra/core/agent/message-list';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { getCurrentWeekCategories, getCurrentWeekPath, ensureCurrentWeekStructure } from '../utils/week-utils';
+
+const execAsync = promisify(exec);
 
 const autoArtifactInputSchema = z.object({
   image_path: z.string().describe('Path or URL to the screenshot file'),
@@ -141,6 +145,25 @@ Focus on technical accuracy and provide specific, actionable insights about what
 
     // Extract week folder name from path
     const weekFolderName = currentWeekPath.split('/').pop() || 'unknown-week';
+
+    // Show Mac notification (non-intrusive)
+    try {
+      const notificationMessage = `Category: ${metadata.category} • Saved to: ${weekFolderName}`;
+      
+      // Show a proper Mac notification
+      const appleScript = `display notification "${notificationMessage}" with title "${metadata.title}" subtitle "Screenshot Categorized"`;
+      
+      // Run the notification
+      execAsync(`osascript -e '${appleScript}'`).catch(console.warn);
+      
+      // Also automatically open the category folder after a short delay
+      // setTimeout(() => {
+      //   execAsync(`open "${markdownPath}"`).catch(console.warn);
+      // }, 1000);
+      
+    } catch (error) {
+      console.warn('Failed to show notification:', error);
+    }
 
     return {
       ...metadata,
