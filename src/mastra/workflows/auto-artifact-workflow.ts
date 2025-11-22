@@ -97,8 +97,9 @@ Focus on technical accuracy and provide specific, actionable insights about what
         messages.push({
           role: 'user',
           content: [{
-            type: 'image',
-            image: imageBuffer,
+            type: 'file',
+            data: imageBuffer,
+            mediaType: 'image/png',
           }],
         });
       } else {
@@ -117,10 +118,10 @@ Focus on technical accuracy and provide specific, actionable insights about what
       structuredOutput: {
         schema: metadataGenerationSchema,
       },
-      // memory: {
-      //   resource: 'artifact-analysis',
-      //   thread: currentWeekPath
-      // }
+      memory: {
+        resource: 'artifact-analysis',
+        thread: currentWeekPath
+      }
     });
 
     if (!response.object) {
