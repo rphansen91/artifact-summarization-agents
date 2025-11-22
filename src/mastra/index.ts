@@ -5,12 +5,13 @@ import { LibSQLStore } from '@mastra/libsql';
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { artifactAnalysisWorkflow } from './workflows/artifact-analysis-workflow';
 import { autoArtifactAnalysisWorkflow } from './workflows/auto-artifact-workflow';
+import { weekSummaryWorkflow } from './workflows/week-summary-workflow';
 import { weatherAgent } from './agents/weather-agent';
 import { artifactAgent } from './agents/artifact-agent';
 
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, artifactAnalysisWorkflow, autoArtifactAnalysisWorkflow },
+  workflows: { weatherWorkflow, artifactAnalysisWorkflow, autoArtifactAnalysisWorkflow, weekSummaryWorkflow },
   agents: { weatherAgent, artifactAgent },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
