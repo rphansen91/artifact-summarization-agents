@@ -10,6 +10,7 @@ An intelligent screenshot categorization and documentation system that automatic
 - 🏷️ **Smart Categorization**: Automatically classifies content into predefined categories
 - 📝 **Structured Metadata**: Generates titles, descriptions, tags, and searchable content
 - ⚡ **Real-time Processing**: Processes screenshots immediately after capture
+- 🔗 **Git Integration**: Automatic commit analysis and documentation with clickable links
 
 ## Architecture
 
@@ -67,6 +68,53 @@ done
 ```
 
 4. Save the action
+
+### 5. Set Up Git Integration (Optional)
+
+The system can automatically analyze and document Git commits across all your repositories.
+
+**Enable Git commit analysis:**
+```bash
+# Configure Git to use the project's template (from project root)
+git config --global init.templatedir '/Users/$(whoami)/Documents/rpjs/artifact-summarization/.git-template'
+
+# Apply to current repository
+cp .git-template/hooks/post-commit .git/hooks/
+
+# For new repositories, the hook will be automatically installed when you:
+git init
+# or
+git clone <repo-url>
+```
+
+**What it does:**
+- Automatically triggers after each `git commit`
+- Analyzes commit message, changed files, and diff
+- Generates AI-powered documentation
+- Creates clickable links to GitHub/GitLab commits
+- Categorizes commits alongside screenshot artifacts
+- Uses same memory system for connected insights
+
+**Example commit artifact:**
+```markdown
+# Feature Implementation: User Authentication
+
+This commit introduces a comprehensive user authentication system...
+
+---
+
+## Commit Details
+
+- **Repository**: my-project
+- **Commit**: [`a1b2c3d4`](https://github.com/user/repo/commit/a1b2c3d4...)
+- **Files Changed**: 5
+- **Timestamp**: 2025-11-22T13:20:45.123Z
+
+### Changed Files
+- `src/auth/login.ts`
+- `src/auth/register.ts`
+- `tests/auth.spec.ts`
+```
 
 ## Folder Structure
 
@@ -143,6 +191,35 @@ curl -X POST http://localhost:4111/api/workflows/artifactAnalysisWorkflow/start 
   }'
 ```
 
+### Commit Analysis Workflow
+
+Automatically triggered by Git post-commit hooks, but can also be called manually:
+
+```bash
+curl -X POST http://localhost:4111/api/workflows/commitAnalysisWorkflow/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image_path": null,
+    "type": "git_commit",
+    "repo": "my-project",
+    "commit_hash": "a1b2c3d4e5f6...",
+    "message": "Add user authentication feature",
+    "changed_files": "src/auth.ts\nsrc/login.ts",
+    "diff": "diff --git a/src/auth.ts...",
+    "remote_url": "git@github.com:user/repo.git"
+  }'
+```
+
+### Week Summary Workflow
+
+Generate AI-powered summaries of all artifacts in the current week:
+
+```bash
+curl -X POST http://localhost:4111/api/workflows/weekSummaryWorkflow/start \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
 ## User Experience
 
 1. **Take Screenshot** (⌘⇧3 or ⌘⇧4)
@@ -165,14 +242,19 @@ src/
 │   ├── tools/
 │   │   └── weather-tool.ts        # Example tool
 │   ├── workflows/
-│   │   ├── auto-artifact-workflow.ts    # Main auto workflow
-│   │   ├── artifact-analysis-workflow.ts # Manual workflow
-│   │   └── weather-workflow.ts          # Example workflow
+│   │   ├── auto-artifact-workflow.ts      # Main auto workflow
+│   │   ├── artifact-analysis-workflow.ts   # Manual workflow
+│   │   ├── commit-analysis-workflow.ts     # Git commit analysis
+│   │   ├── week-summary-workflow.ts        # Weekly summary generation
+│   │   └── weather-workflow.ts            # Example workflow
 │   ├── utils/
 │   │   └── week-utils.ts          # Week calculation utilities
 │   └── index.ts                   # Mastra configuration
 ├── scripts/
 │   └── artifacts-categorize-file.sh     # Automator integration script
+├── .git-template/
+│   └── hooks/
+│       └── post-commit                  # Git post-commit hook template
 ├── package.json
 └── tsconfig.json
 ```
