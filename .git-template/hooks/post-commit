@@ -1,0 +1,42 @@
+#!/bin/zsh
+
+# ---- Config ----
+API_URL="http://localhost:4111/api/workflows/commitAnalysisWorkflow/start-async"
+
+# Require jq
+if ! command -v jq >/dev/null 2>&1; then
+  echo "[post-commit] jq not found, skipping commit analysis."
+  exit 0
+fi
+
+# ---- Collect commit data ----
+REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_NAME=${REPO_ROOT:t}
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_HASH")
+COMMIT_DIFF=$(git show "$COMMIT_HASH" --patch --stat --format=)
+
+# ---- Build JSON payload ---
+PAYLOAD=$(jq -n \
+  --arg repo "$REPO_NAME" \
+  --arg hash "$COMMIT_HASH" \
+  --arg message "$COMMIT_MESSAGE" \
+  --arg files "$CHANGED_FILES" \
+  --arg diff "$COMMIT_DIFF" \
+  '{inputData: {
+      image_path: null,
+      type: "git_commit",
+      repo: $repo,
+      commit_hash: $hash,
+      message: $message,
+      changed_files: $files,
+      diff: $diff
+  }}')
+
+# ---- Send to Mastra (fire and forget) ----
+curl -s -X POST "$API_URL" \
+  -H "Content-Type: application/json" \
+  -d "$PAYLOAD" >/dev/null 2>&1 &
+
+exit 0
