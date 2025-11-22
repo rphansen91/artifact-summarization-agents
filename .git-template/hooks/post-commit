@@ -16,6 +16,7 @@ COMMIT_HASH=$(git rev-parse HEAD)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_HASH")
 COMMIT_DIFF=$(git show "$COMMIT_HASH" --patch --stat --format=)
+REMOTE_URL=$(git config --get remote.origin.url 2>/dev/null || "")
 
 # ---- Build JSON payload ---
 PAYLOAD=$(jq -n \
@@ -24,6 +25,7 @@ PAYLOAD=$(jq -n \
   --arg message "$COMMIT_MESSAGE" \
   --arg files "$CHANGED_FILES" \
   --arg diff "$COMMIT_DIFF" \
+  --arg remote "$REMOTE_URL" \
   '{inputData: {
       image_path: null,
       type: "git_commit",
@@ -31,7 +33,8 @@ PAYLOAD=$(jq -n \
       commit_hash: $hash,
       message: $message,
       changed_files: $files,
-      diff: $diff
+      diff: $diff,
+      remote_url: $remote
   }}')
 
 # ---- Send to Mastra (fire and forget) ----

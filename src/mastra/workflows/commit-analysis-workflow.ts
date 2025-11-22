@@ -12,6 +12,7 @@ const commitAnalysisInputSchema = z.object({
   message: z.string().describe('Commit message'),
   changed_files: z.string().describe('List of changed files'),
   diff: z.string().describe('Git diff output'),
+  remote_url: z.string().optional().describe('Git remote URL'),
 });
 
 const commitAnalysisOutputSchema = z.object({
@@ -132,6 +133,24 @@ Focus on technical accuracy and provide insights that would be valuable for proj
     // Generate file path within category directory
     const markdownPath = join(categoryPath, filename);
 
+    // Generate commit link if remote URL is available
+    let commitLink = `\`${inputData.commit_hash}\``;
+    if (inputData.remote_url) {
+      const remoteUrl = inputData.remote_url;
+      if (remoteUrl.includes('github.com')) {
+        // GitHub format
+        const repoPath = remoteUrl.replace(/\.git$/, '').replace(/^.*github\.com[\/:]/, '');
+        commitLink = `[\`${inputData.commit_hash.substring(0, 8)}\`](https://github.com/${repoPath}/commit/${inputData.commit_hash})`;
+      } else if (remoteUrl.includes('gitlab.com')) {
+        // GitLab format  
+        const repoPath = remoteUrl.replace(/\.git$/, '').replace(/^.*gitlab\.com[\/:]/, '');
+        commitLink = `[\`${inputData.commit_hash.substring(0, 8)}\`](https://gitlab.com/${repoPath}/-/commit/${inputData.commit_hash})`;
+      } else {
+        // Generic format - just show the hash
+        commitLink = `\`${inputData.commit_hash.substring(0, 8)}\``;
+      }
+    }
+
     // Enhance markdown with commit metadata
     const enhancedMarkdown = `${metadata.markdown}
 
@@ -140,9 +159,10 @@ Focus on technical accuracy and provide insights that would be valuable for proj
 ## Commit Details
 
 - **Repository**: ${inputData.repo}
-- **Commit Hash**: \`${inputData.commit_hash}\`
+- **Commit**: ${commitLink}
 - **Files Changed**: ${filesCount}
 - **Timestamp**: ${new Date().toISOString()}
+${inputData.remote_url ? `- **Remote**: ${inputData.remote_url}` : ''}
 
 ### Changed Files
 ${filesList.map(f => `- \`${f}\``).join('\n')}
