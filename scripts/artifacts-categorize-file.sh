@@ -1,21 +1,36 @@
 #!/bin/zsh
 
+# Set up environment for Automator
+export PATH="/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:$PATH"
+export HOME="${HOME:-/Users/$(whoami)}"
+
 FILE="$1"
 
-echo "artifacts-categorize-file.sh called with: '$FILE'"
+# Logging configuration - set ARTIFACTS_DEBUG=1 to enable logging
+DEBUG_LOGGING="${ARTIFACTS_DEBUG:-0}"
+LOG_FILE="/tmp/artifacts-categorize.log"
+
+# Logging function
+log() {
+  echo "$1"
+  if [ "$DEBUG_LOGGING" = "1" ]; then
+    echo "$(date): $1" >> "$LOG_FILE"
+  fi
+}
+
+log "artifacts-categorize-file.sh called with: '$FILE'"
 
 # 1. Ensure file exists
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
-  echo "File does not exist, exiting."
+  log "File does not exist, exiting."
   exit 0
 fi
 
 BASENAME=${FILE:t}
-echo "BASENAME: $BASENAME"
 
 # 2. Only act on screenshots
 if [[ "$BASENAME" != Screenshot* && "$BASENAME" != "Screen Shot"* ]]; then
-  echo "Not a screenshot, ignoring."
+  log "Not a screenshot, ignoring."
   exit 0
 fi
 
@@ -34,18 +49,32 @@ end try
 EOF
 )
 
-echo "NOTES: $NOTES"
-
 # If user canceled → do nothing
 if [ "$NOTES" = "__CANCEL__" ]; then
-  echo "User cancelled — skipping workflow call."
+  log "User cancelled — skipping workflow call."
   exit 0
 fi
 
 # Empty notes are OK, continue with workflow
 
-# 4. Construct payload using jq so everything is safely escaped
-PAYLOAD=$(jq -n \
+# Use full path to jq in case it's not in PATH
+JQ_PATH=$(which jq)
+if [ -z "$JQ_PATH" ]; then
+  # Common jq locations
+  for jq_loc in /usr/local/bin/jq /opt/homebrew/bin/jq /usr/bin/jq; do
+    if [ -x "$jq_loc" ]; then
+      JQ_PATH="$jq_loc"
+      break
+    fi
+  done
+fi
+
+if [ -z "$JQ_PATH" ]; then
+  log "ERROR: jq not found!"
+  exit 1
+fi
+
+PAYLOAD=$("$JQ_PATH" -n \
   --arg image_path "$FILE" \
   --arg notes "$NOTES" \
   '{inputData: {image_path: $image_path, notes: $notes}}'
@@ -53,29 +82,23 @@ PAYLOAD=$(jq -n \
 
 API_URL="http://localhost:4111/api/workflows/autoArtifactAnalysisWorkflow/start-async"
 
-echo "CALLING MASTRA API..."
-echo "Payload:"
-echo "$PAYLOAD"
+log "Processing screenshot..."
 
 RESPONSE=$(curl -s -X POST "$API_URL" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD")
 
-echo "RAW RESPONSE:"
-echo "$RESPONSE"
-
 # Check response status
 if [ -n "$RESPONSE" ]; then
-  STATUS=$(echo "$RESPONSE" | jq -r '.status // "unknown"' 2>/dev/null)
+  STATUS=$(echo "$RESPONSE" | "$JQ_PATH" -r '.status // "unknown"' 2>/dev/null)
+  
   if [ "$STATUS" = "success" ]; then
-    echo "✅ Screenshot processed successfully!"
-    echo "Notification will appear shortly..."
+    log "✅ Screenshot processed successfully!"
   else
-    echo "❌ Processing failed"
-    echo "Response: $RESPONSE"
+    log "❌ Processing failed"
   fi
 else
-  echo "❌ No response received from API"
+  log "❌ No response received from API"
 fi
 
 exit 0

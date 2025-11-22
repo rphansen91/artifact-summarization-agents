@@ -220,6 +220,30 @@ Edit the analysis prompts in the workflow files
 
 ## Troubleshooting
 
+### Debug Logging
+
+The shell script has optional debug logging that can be enabled:
+
+**Enable logging:**
+```bash
+export ARTIFACTS_DEBUG=1
+# Or add to your shell profile (.zshrc, .bash_profile)
+echo "export ARTIFACTS_DEBUG=1" >> ~/.zshrc
+```
+
+**View logs:**
+```bash
+tail -f /tmp/artifacts-categorize.log
+```
+
+**Disable logging:**
+```bash
+export ARTIFACTS_DEBUG=0
+# Or remove from shell profile
+```
+
+The log shows detailed execution including environment, API calls, and responses.
+
 ### Common Issues
 
 **Server not responding:**
@@ -241,6 +265,7 @@ chmod +x scripts/artifacts-categorize-file.sh
 - Ensure Folder Action is saved and enabled
 - Check script paths are absolute
 - Verify screenshot save location matches watched folder
+- Enable debug logging to see what's happening
 
 **Missing jq:**
 ```bash

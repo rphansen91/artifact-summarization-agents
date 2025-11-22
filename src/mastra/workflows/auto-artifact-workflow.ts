@@ -117,6 +117,10 @@ Focus on technical accuracy and provide specific, actionable insights about what
       structuredOutput: {
         schema: metadataGenerationSchema,
       },
+      // memory: {
+      //   resource: 'artifact-analysis',
+      //   thread: currentWeekPath
+      // }
     });
 
     if (!response.object) {
