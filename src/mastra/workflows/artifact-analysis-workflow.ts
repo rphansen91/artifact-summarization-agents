@@ -8,7 +8,6 @@ import { join, dirname } from 'path';
 const artifactInputSchema = z.object({
   image_path: z.string().describe('Path or URL to the screenshot file'),
   notes: z.string().optional().describe('Optional freeform text describing the screenshot'),
-  target_path: z.string().describe('Target directory path where files should be saved'),
   categories: z.array(z.string()).describe('Available categories for classification'),
 });
 
@@ -111,8 +110,11 @@ Focus on technical accuracy and provide specific, actionable insights about what
 
     const metadata = response.object;
 
+    // Use environment-based target path
+    const targetPath = process.env.TARGET_PATH || '/app/artifacts';
+    
     // Create target directory with category subdirectory
-    const categoryPath = join(inputData.target_path, metadata.category);
+    const categoryPath = join(targetPath, metadata.category);
     await fs.mkdir(categoryPath, { recursive: true });
 
     // Generate timestamp-prefixed filename to ensure uniqueness

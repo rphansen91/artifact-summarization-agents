@@ -80,7 +80,7 @@ PAYLOAD=$("$JQ_PATH" -n \
   '{inputData: {image_path: $image_path, notes: $notes}}'
 )
 
-API_URL="http://localhost:4111/api/workflows/autoArtifactAnalysisWorkflow/start-async"
+API_URL="http://localhost:6700/api/workflows/autoArtifactAnalysisWorkflow/start-async"
 
 log "Processing screenshot..."
 

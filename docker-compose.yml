@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  artifact-summarization:
+    build: .
+    ports:
+      - "6700:4111"
+    volumes:
+      # Persist database
+      - ./data:/app/data
+      # Mount the main artifacts folder (git repo)
+      - /Users/ryanhansen/Documents/Artifacts:/app/artifacts
+    environment:
+      - NODE_ENV=production
+      - MASTRA_DB_PATH=/app/data/mastra.db
+      - TARGET_PATH=/app/artifacts
+      # Add your API keys here or use .env file
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
