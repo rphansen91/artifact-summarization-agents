@@ -1,0 +1,86 @@
+{
+  "title": "Artifact Engine Demo",
+  "description": "A 2-minute demonstration of how the Artifact Engine automatically captures, analyzes, and organizes developer work through screenshots and git commits.",
+  "scenes": [
+    {
+      "title": "The Problem",
+      "description": "Opening scene showing scattered developer work - desktop with random screenshots, terminal windows, and git commits that get lost over time.",
+      "narration": "Every week, I take dozens of screenshots and make hundreds of git commits. By Friday, it's all scattered and forgotten. What if none of that work ever disappeared again?",
+      "duration": "15 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show messy desktop with scattered screenshots and terminal windows"
+    },
+    {
+      "title": "Taking a Screenshot",
+      "description": "Demonstration of taking a normal screenshot of code or terminal output, showing the natural workflow.",
+      "narration": "Watch this. I take a screenshot like normal...",
+      "duration": "10 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Actually take a screenshot of code/terminal in real-time"
+    },
+    {
+      "title": "AI Processing",
+      "description": "The screenshot being automatically processed by the AI system, showing the analysis in progress.",
+      "narration": "The AI immediately analyzes it, determines it's code-related, generates a descriptive title, writes a technical summary, and files it automatically in this week's folder.",
+      "duration": "20 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show processing notification, then navigate to generated file"
+    },
+    {
+      "title": "Generated Artifact",
+      "description": "The final organized result - a well-structured markdown file with AI-generated insights, properly categorized and timestamped.",
+      "narration": "Look at that - it understood the context, extracted the key technical details, and created a timestamp-prefixed file so nothing ever gets overwritten. All automatic, zero manual work.",
+      "duration": "15 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show the generated markdown with AI analysis and weekly folder structure"
+    },
+    {
+      "title": "Making a Git Commit",
+      "description": "Demonstration of making a normal git commit, showing the standard developer workflow.",
+      "narration": "Same thing happens with commits. I make a normal git commit...",
+      "duration": "10 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Actually make a git commit in real-time"
+    },
+    {
+      "title": "Commit Analysis",
+      "description": "The commit being automatically analyzed, showing the system capturing the diff and generating documentation.",
+      "narration": "The system captures the diff, analyzes what changed, categorizes the work, and generates documentation with links back to the actual commit. It even maintains context across the week's work.",
+      "duration": "20 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show commit processing and generated commit artifact"
+    },
+    {
+      "title": "Commit Documentation",
+      "description": "The rich documentation generated from the commit, showing technical insights and connections to other work.",
+      "narration": "Now I have rich documentation of what I built, why it matters, and how it connects to my other work - all generated from my normal workflow.",
+      "duration": "15 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show generated commit documentation with links and context"
+    },
+    {
+      "title": "The Compound Result",
+      "description": "Final view of the organized weekly knowledge base, showing multiple artifacts working together to create a comprehensive record.",
+      "narration": "After just one week, I have a structured knowledge base of everything I accomplished. My work compounds automatically, and I never lose another breakthrough.",
+      "duration": "15 seconds",
+      "image": null,
+      "screenRecording": true,
+      "notes": "Show weekly folder with multiple organized artifacts and end card"
+    }
+  ],
+  "totalDuration": "2 minutes",
+  "keyFeatures": [
+    "Zero friction capture",
+    "AI-powered analysis", 
+    "Automatic organization",
+    "Compound knowledge building"
+  ],
+  "callToAction": "Artifact Engine - Your work, automatically documented"
+}
