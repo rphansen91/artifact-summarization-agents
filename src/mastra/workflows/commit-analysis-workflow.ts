@@ -123,15 +123,19 @@ Focus on technical accuracy and provide insights that would be valuable for proj
 
     const metadata = response.object;
 
+    // Generate timestamp-prefixed filename to ensure uniqueness
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19); // YYYY-MM-DDTHH-MM-SS
+    
     // Ensure filename ends with .md
-    const filename = metadata.filename.endsWith('.md') ? metadata.filename : `${metadata.filename}.md`;
+    const baseFilename = metadata.filename.endsWith('.md') ? metadata.filename : `${metadata.filename}.md`;
+    const timestampedFilename = `${timestamp}_${baseFilename}`;
 
     // Create category subdirectory within current week
     const categoryPath = join(currentWeekPath, metadata.category);
     await fs.mkdir(categoryPath, { recursive: true });
 
     // Generate file path within category directory
-    const markdownPath = join(categoryPath, filename);
+    const markdownPath = join(categoryPath, timestampedFilename);
 
     // Generate commit link if remote URL is available
     let commitLink = `\`${inputData.commit_hash}\``;
@@ -179,7 +183,7 @@ ${metadata.tags.map(tag => `\`${tag}\``).join(' ')}
 
     return {
       category: metadata.category,
-      filename,
+      filename: timestampedFilename,
       title: metadata.title,
       markdown: enhancedMarkdown,
       tags: metadata.tags,
