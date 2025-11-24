@@ -1,143 +1,72 @@
-# Artifact Engine Demo Script
+# Artifact Engine - 2 Minute Demo Script
 
-## Opening Hook (30 seconds)
+## Hook (15 seconds)
+**[Screen: Desktop with scattered screenshots and terminal]**
 
-**[Screen: Messy desktop with scattered screenshots, terminal windows, code files]**
-
-> "This is what most developers' work looks like at the end of a week. Scattered screenshots, random commits, lost insights, forgotten breakthroughs. By Friday, you've built amazing things, solved complex problems, had key realizations... but where did it all go?"
-
-**[Pause]**
-
-> "What if none of that ever disappeared again?"
+> "Every week, I take dozens of screenshots and make hundreds of git commits. By Friday, it's all scattered and forgotten. What if none of that work ever disappeared again?"
 
 ---
 
-## Problem Statement (45 seconds)
+## Demo: Screenshot Analysis (45 seconds)
 
-**[Screen: Split view showing "Before" - chaos vs "After" - organized]**
+**[Screen: Take a screenshot of code/terminal]**
 
-> "I'm Ryan, and like most engineers, I was losing my best work every day. Screenshots saved to desktop and forgotten. Git commits with no context. Terminal debugging sessions that solved critical issues... gone forever."
+> "Watch this. I take a screenshot like normal..."
 
-> "I was spending weekends trying to remember what I accomplished, writing status reports from memory, and constantly reinventing solutions I'd already discovered."
+**[Show screenshot being processed]**
 
-> "The problem wasn't that I wasn't productive. The problem was that my productivity wasn't compounding."
+> "The AI immediately analyzes it, determines it's code-related, generates a descriptive title, writes a technical summary, and files it automatically in this week's folder."
 
----
+**[Navigate to show organized result]**
 
-## The Solution (60 seconds)
-
-**[Screen: Clean Artifact Engine interface]**
-
-> "So I built the Artifact Engine. A system that captures, contextualizes, and compounds my work automatically."
-
-**[Demonstrate core workflow]**
-
-> "Here's how it works. I take a screenshot like I normally would..."
-
-**[Show screenshot being taken]**
-
-> "Within seconds, an AI agent analyzes it, determines the category, generates a meaningful title and summary, extracts technical insights, and files it in my weekly knowledge base."
-
-**[Show the auto-categorization happening]**
-
-> "But here's the key: it's not just filing random screenshots. The AI has access to my entire week's context, so every artifact builds on the last, creating a coherent narrative of my work."
+> "Look at that - it understood the context, extracted the key technical details, and created a timestamp-prefixed file so nothing ever gets overwritten. All automatic, zero manual work."
 
 ---
 
-## Core Features Demo (90 seconds)
+## Demo: Commit Analysis (45 seconds)
 
-### 1. Frictionless Capture (30 seconds)
+**[Screen: Make a git commit]**
 
-**[Screen recording: Taking screenshots seamlessly]**
+> "Same thing happens with commits. I make a normal git commit..."
 
-> "Capture happens with zero friction. I screenshot debugging sessions, architecture diagrams, terminal output - anything worth remembering. The system automatically processes everything in the background."
+**[Show commit being processed]**
 
-### 2. Intelligent Context (30 seconds)
+> "The system captures the diff, analyzes what changed, categorizes the work, and generates documentation with links back to the actual commit. It even maintains context across the week's work."
 
-**[Screen: Show weekly folder structure and AI-generated summaries]**
+**[Show generated commit artifact]**
 
-> "Every artifact gets enriched with context. The AI doesn't just see this screenshot - it sees how it connects to yesterday's debugging, last Tuesday's architecture decision, and the overall arc of this week's project."
-
-### 3. Automatic Organization (30 seconds)
-
-**[Screen: Navigate through organized weekly structure]**
-
-> "Everything gets organized automatically into a structure that makes sense: Year → Week → Category. I can trace my progress week by week, see patterns in my work, and never lose track of insights again."
+> "Now I have rich documentation of what I built, why it matters, and how it connects to my other work - all generated from my normal workflow."
 
 ---
 
-## The Results (60 seconds)
+## The Result (15 seconds)
 
-**[Screen: Show real examples of weekly summaries and artifacts]**
+**[Screen: Show weekly folder structure with multiple artifacts]**
 
-> "After just a month, I have a living knowledge base of my engineering work. Weekly summaries that read like professional case studies. Technical insights that I can reference months later. Proof of my progress that I never had to manually create."
+> "After just one week, I have a structured knowledge base of everything I accomplished. My work compounds automatically, and I never lose another breakthrough."
 
-**[Show metrics/examples]**
-
-> "This week alone: 47 artifacts captured, automatically categorized into 8 different areas. My system generated a 500-word technical summary of my accomplishments - something that used to take me hours to write, now happens automatically."
-
-> "But the real value isn't the artifacts themselves. It's the identity shift."
+**[End screen: "Artifact Engine - Your work, automatically documented"]**
 
 ---
 
-## Identity Transformation (45 seconds)
+## Demo Flow Notes:
 
-**[Screen: Before/after comparison of workflow]**
+1. **Screenshot Demo:**
+   - Take screenshot of code/terminal
+   - Show real-time processing notification
+   - Navigate to generated markdown file
+   - Highlight AI-generated insights
 
-> "I went from 'I forget important things' to 'Nothing important is ever lost.'"
+2. **Commit Demo:**
+   - Make actual git commit
+   - Show commit analysis processing
+   - Display generated artifact with commit links
+   - Show weekly folder organization
 
-> "From 'I need to document my work' to 'My work automatically generates documentation.'"
+3. **Key Points to Emphasize:**
+   - Zero friction (normal workflow)
+   - AI-powered analysis
+   - Automatic organization
+   - Compound knowledge building
 
-> "From 'I wonder what I accomplished this week' to 'My system produces detailed weekly chapters of my progress.'"
-
-> "This isn't just better organization. This is building a compound knowledge engine that works for me, not against me."
-
----
-
-## The Bigger Picture (30 seconds)
-
-**[Screen: Vision of accumulated artifacts over time]**
-
-> "Over time, this becomes something unprecedented: a complete record of my evolution as an engineer. A training set for future AI collaborators. A content engine. A portfolio that documents real engineering value."
-
-> "All of it emerging from my natural workflow, without me ever 'doing documentation.'"
-
----
-
-## Call to Action (30 seconds)
-
-**[Screen: Simple, clean interface]**
-
-> "The Artifact Engine is open source. You can run it locally, own your data, and start building your own compound knowledge system today."
-
-> "Because your best work deserves to compound, not disappear."
-
-**[End screen: GitHub repo URL and key benefits]**
-
----
-
-## Technical Demo Notes
-
-### Screenshots to Capture:
-1. Messy desktop → organized weekly structure
-2. Real-time screenshot processing in action
-3. AI-generated summaries and categorization
-4. Weekly folder navigation
-5. Generated markdown with technical insights
-6. Week-over-week progress visualization
-
-### Key Technical Points to Show:
-- Docker-based deployment (simple setup)
-- Real-time AI processing
-- Automatic Git integration for commits
-- Weekly summary generation
-- Category-based organization
-- Timestamp-based unique filenames
-
-### Tone:
-- Professional but approachable
-- Problem-focused, not feature-focused
-- Emphasize identity transformation over technical specs
-- Show real value, not just cool technology
-
-**Total Runtime: ~6 minutes**
+**Total Runtime: 2 minutes**
