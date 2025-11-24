@@ -115,9 +115,13 @@ Focus on technical accuracy and provide specific, actionable insights about what
     const categoryPath = join(inputData.target_path, metadata.category);
     await fs.mkdir(categoryPath, { recursive: true });
 
+    // Generate timestamp-prefixed filename to ensure uniqueness
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19); // YYYY-MM-DDTHH-MM-SS
+    const timestampedFilename = `${timestamp}_${metadata.filename}`;
+
     // Generate file paths within category directory
-    const markdownPath = join(categoryPath, metadata.filename.replace('.png', '.md'));
-    const imagePath = join(categoryPath, metadata.filename);
+    const markdownPath = join(categoryPath, timestampedFilename.replace('.png', '.md'));
+    const imagePath = join(categoryPath, timestampedFilename);
 
     // Write markdown file
     await fs.writeFile(markdownPath, metadata.markdown, 'utf8');
