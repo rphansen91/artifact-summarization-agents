@@ -51,8 +51,6 @@ const autoAnalyzeArtifact = createStep({
     console.log(`Auto-detected week path: ${currentWeekPath}`);
     console.log(`Auto-detected categories: ${categories.join(', ')}`);
 
-    const categoriesList = categories.map(cat => `   - ${cat}`).join('\n');
-
     const prompt = `Analyze this screenshot and generate complete structured metadata for artifact organization.
 
 Image Path: ${inputData.image_path}
@@ -61,7 +59,14 @@ User Notes: ${inputData.notes || 'No additional notes provided'}
 Analyze the screenshot and provide:
 
 1. **Category Classification** - Choose the best fitting category from the available options:
-${categoriesList}
+  - 1-Code: Source code, IDEs, programming interfaces, development tools
+  - 2-Terminal: Command line interfaces, shell sessions, CLI tools, console output
+  - 3-Performance: Metrics, monitoring, profiling, benchmarks, analytics dashboards
+  - 4-Architecture: System diagrams, infrastructure, database schemas, technical designs
+  - 5-AI_Agents: AI tools, LLM interfaces, agent frameworks, AI development
+  - 6-Product: UI/UX, product features, user interfaces, design systems
+  - 7-Client_Work: Client-specific work, project deliverables, business applications
+  - 8-Random: Miscellaneous technical content that doesn't fit other categories
 
 2. **File Naming** - Generate a descriptive slug (max 60 chars, lowercase, hyphens only) with .png extension
 
