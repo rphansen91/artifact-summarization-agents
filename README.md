@@ -1,4 +1,4 @@
-# Artifact Summarization Engine
+# Artifact Engine
 
 An intelligent screenshot categorization and documentation system that automatically processes macOS screenshots, analyzes their content with AI, and organizes them into a structured weekly artifact system.
 
