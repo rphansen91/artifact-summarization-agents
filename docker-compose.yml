@@ -10,10 +10,14 @@ services:
       - ./data:/app/data
       # Mount the main artifacts folder (git repo)
       - /Users/ryanhansen/Documents/Artifacts:/app/artifacts
+      # Mount Desktop folder for screenshot access
+      - /Users/ryanhansen/Desktop:/app/desktop
     environment:
       - NODE_ENV=production
       - MASTRA_DB_PATH=/app/data/mastra.db
       - TARGET_PATH=/app/artifacts
+      - DESKTOP_PATH=/Users/ryanhansen/Desktop/
+      - CONTAINER_DESKTOP_PATH=/app/desktop/
       # Add your API keys here or use .env file
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     env_file:

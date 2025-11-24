@@ -92,8 +92,18 @@ Focus on technical accuracy and provide specific, actionable insights about what
     // Add image - load as buffer if local file, otherwise use path/URL
     if (inputData.image_path) {
       if (inputData.image_path.startsWith('/')) {
+        // Map local paths to container paths
+        let containerPath = inputData.image_path;
+        const desktopPath = process.env.DESKTOP_PATH || '/Users/ryanhansen/Desktop/';
+        const containerDesktopPath = process.env.CONTAINER_DESKTOP_PATH || '/app/desktop/';
+        
+        if (inputData.image_path.startsWith(desktopPath)) {
+          containerPath = inputData.image_path.replace(desktopPath, containerDesktopPath);
+        }
+        
+        console.log(`Loading image from local file: ${inputData.image_path} -> ${containerPath}`);
         // Local file - load as buffer
-        const imageBuffer = await fs.readFile(inputData.image_path);
+        const imageBuffer = await fs.readFile(containerPath);
         messages.push({
           role: 'user',
           content: [{
@@ -145,9 +155,20 @@ Focus on technical accuracy and provide specific, actionable insights about what
     // Write markdown file
     await fs.writeFile(markdownPath, metadata.markdown, 'utf8');
 
+    console.log(`Artifact analysis saved to: ${markdownPath}`);
+
     // Copy image file with new name
     if (inputData.image_path.startsWith('/')) {
-      await fs.copyFile(inputData.image_path, imagePath);
+      // Map local paths to container paths for copying
+      let sourceContainerPath = inputData.image_path;
+      const desktopPath = process.env.DESKTOP_PATH || '/Users/ryanhansen/Desktop/';
+      const containerDesktopPath = process.env.CONTAINER_DESKTOP_PATH || '/app/desktop/';
+      
+      if (inputData.image_path.startsWith(desktopPath)) {
+        sourceContainerPath = inputData.image_path.replace(desktopPath, containerDesktopPath);
+      }
+      
+      await fs.copyFile(sourceContainerPath, imagePath);
     } else {
       console.warn('Image path is not a local file, skipping image copy');
     }

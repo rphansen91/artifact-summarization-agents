@@ -34,6 +34,8 @@ EXPOSE 6700
 ENV NODE_ENV=production
 ENV MASTRA_DB_PATH=/app/data/mastra.db
 ENV TARGET_PATH=/app/artifacts
+ENV DESKTOP_PATH=/Users/ryanhansen/Desktop/
+ENV CONTAINER_DESKTOP_PATH=/app/desktop/
 
 # Start the application
 CMD ["npm", "start"]
