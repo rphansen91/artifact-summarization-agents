@@ -46,6 +46,11 @@ export default function FilePage() {
 
   const fileName = filePath ? filePath.split('/').pop() || 'Unknown File' : 'Unknown File';
   const baseName = fileName.replace(/\.[^/.]+$/, ''); // Remove extension for display
+  
+  // Check if this file is part of a week folder
+  const pathParts = filePath ? filePath.split('/') : [];
+  const weekMatch = pathParts.find(part => part.includes('Week_'));
+  const weekPath = weekMatch && filePath ? filePath.substring(0, filePath.indexOf(weekMatch) + weekMatch.length) : null;
 
   const renderFileContent = (file: FileData) => {
     if (file.isImage) {
@@ -83,8 +88,21 @@ export default function FilePage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
-          Documents
+          Artifacts
         </Link>
+        {weekPath && weekMatch && (
+          <>
+            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <Link 
+              href={`/week-details?path=${encodeURIComponent(weekPath)}`}
+              className="hover:text-white transition-colors"
+            >
+              {weekMatch}
+            </Link>
+          </>
+        )}
         <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>

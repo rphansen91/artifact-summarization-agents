@@ -18,19 +18,26 @@ export function Sidebar() {
   const handleItemSelect = (item: TreeItem) => {
     setSelectedItem(item);
     if (item.type === 'file') {
-      // Extract sessionId and filename from brain directory path
-      const brainDir = '/Users/ryanhansen/.gemini/antigravity/brain';
-      if (item.path.startsWith(brainDir)) {
-        const relativePath = item.path.replace(brainDir + '/', '');
-        const pathParts = relativePath.split('/');
-        if (pathParts.length >= 2) {
-          const sessionId = pathParts[0];
-          const filename = pathParts[pathParts.length - 1];
-          router.push(`/artifact/${sessionId}/${filename}`);
-        }
+      // Check if this is a week directory (contains "Week_" and has grouped files)
+      if (item.name.includes('Week_') && !item.name.includes('.')) {
+        // Navigate to weekly details view
+        const encodedPath = encodeURIComponent(item.path.substring(1)); // Remove leading slash
+        router.push(`/week/${encodedPath}`);
       } else {
-        // For Documents Artifacts, use the file route with path parameter
-        router.push(`/file?path=${encodeURIComponent(item.path)}`);
+        // Extract sessionId and filename from brain directory path
+        const brainDir = '/Users/ryanhansen/.gemini/antigravity/brain';
+        if (item.path.startsWith(brainDir)) {
+          const relativePath = item.path.replace(brainDir + '/', '');
+          const pathParts = relativePath.split('/');
+          if (pathParts.length >= 2) {
+            const sessionId = pathParts[0];
+            const filename = pathParts[pathParts.length - 1];
+            router.push(`/artifact/${sessionId}/${filename}`);
+          }
+        } else {
+          // For Documents Artifacts, use the file route with path parameter
+          router.push(`/file?path=${encodeURIComponent(item.path)}`);
+        }
       }
     }
   };
