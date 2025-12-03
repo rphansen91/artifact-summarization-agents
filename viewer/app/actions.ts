@@ -274,3 +274,48 @@ function countFilesRecursively(items: TreeItem[]): number {
   }
   return count;
 }
+
+export async function getMostRecentWeekPath(): Promise<string | null> {
+  try {
+    const entries = await fs.promises.readdir(ARTIFACTS_ROOT, { withFileTypes: true });
+    const years: string[] = [];
+    
+    // Find year directories
+    for (const entry of entries) {
+      if (entry.isDirectory() && /^\d{4}$/.test(entry.name)) {
+        years.push(entry.name);
+      }
+    }
+    
+    if (years.length === 0) return null;
+    
+    // Sort years in descending order (most recent first)
+    years.sort((a, b) => parseInt(b) - parseInt(a));
+    
+    // Look through each year for the most recent week
+    for (const year of years) {
+      const yearPath = path.join(ARTIFACTS_ROOT, year);
+      const yearEntries = await fs.promises.readdir(yearPath, { withFileTypes: true });
+      const weeks: { name: string; mtime: Date }[] = [];
+      
+      for (const entry of yearEntries) {
+        if (entry.isDirectory() && entry.name.includes('Week_')) {
+          const weekPath = path.join(yearPath, entry.name);
+          const stat = await fs.promises.stat(weekPath);
+          weeks.push({ name: entry.name, mtime: stat.mtime });
+        }
+      }
+      
+      if (weeks.length > 0) {
+        // Sort weeks by modification time (most recent first)
+        weeks.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+        return path.join(yearPath, weeks[0].name);
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error finding most recent week:', error);
+    return null;
+  }
+}
