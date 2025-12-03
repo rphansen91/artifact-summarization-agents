@@ -15,6 +15,7 @@ export function WeeklyDetailsView({ weekPath, weekName }: WeeklyDetailsViewProps
   const [weekDetails, setWeekDetails] = useState<WeekDetails | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
 
   useEffect(() => {
     async function loadWeekDetails() {
@@ -33,6 +34,38 @@ export function WeeklyDetailsView({ weekPath, weekName }: WeeklyDetailsViewProps
     
     loadWeekDetails();
   }, [weekPath]);
+
+  const handleGenerateSummary = async () => {
+    setGeneratingSummary(true);
+    try {
+      // Extract relative path from full weekPath
+      // weekPath format: /Users/ryanhansen/Documents/Artifacts/2025/Week_49_Dec01-Dec07
+      // We want to send: 2025/Week_49_Dec01-Dec07
+      const artifactsRoot = '/Users/ryanhansen/Documents/Artifacts';
+      const relativePath = weekPath.replace(artifactsRoot, '').replace(/^\//, '');
+      
+      const response = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ weekPath: relativePath }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate summary');
+      }
+
+      // Reload week details to show the new summary
+      const details = await getWeekDetails(weekPath);
+      setWeekDetails(details);
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
+      alert('Failed to generate summary. Please try again.');
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -102,26 +135,71 @@ export function WeeklyDetailsView({ weekPath, weekName }: WeeklyDetailsViewProps
         </p>
       </div>
 
-      {/* Summary Link */}
-      {weekDetails.summaryFile && (
-        <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-white mb-1">Week Summary</h3>
-              <p className="text-gray-400 text-sm">View the generated summary for this week</p>
-            </div>
-            <Link 
-              href={`/file?path=${encodeURIComponent(weekDetails.summaryFile.path)}`}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              View Summary
-            </Link>
+      {/* Summary Section */}
+      <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-white mb-1">Week Summary</h3>
+            <p className="text-gray-400 text-sm">
+              {weekDetails.summaryFile 
+                ? "View the generated summary for this week" 
+                : "Generate an AI-powered summary of all artifacts in this week"}
+            </p>
           </div>
+          {weekDetails.summaryFile ? (
+            <div className="flex items-center gap-2">
+              <Link 
+                href={`/file?path=${encodeURIComponent(weekDetails.summaryFile.path)}`}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                View Summary
+              </Link>
+              <button
+                onClick={handleGenerateSummary}
+                disabled={generatingSummary}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {generatingSummary ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Regenerate
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerateSummary}
+              disabled={generatingSummary}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {generatingSummary ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Generate Summary
+                </>
+              )}
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Files List */}
       <div className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden">

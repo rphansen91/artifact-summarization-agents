@@ -70,11 +70,9 @@ export function getCurrentWeekPath(basePath?: string): string {
 }
 
 /**
- * Gets available categories from the current week folder
+ * Gets available categories from any week folder
  */
-export async function getCurrentWeekCategories(basePath?: string): Promise<string[]> {
-  const weekPath = getCurrentWeekPath(basePath);
-  
+export async function getWeekCategories(weekPath: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(weekPath, { withFileTypes: true });
     const categories = entries
@@ -98,6 +96,14 @@ export async function getCurrentWeekCategories(basePath?: string): Promise<strin
       '8-Random'
     ];
   }
+}
+
+/**
+ * Gets available categories from the current week folder
+ */
+export async function getCurrentWeekCategories(basePath?: string): Promise<string[]> {
+  const weekPath = getCurrentWeekPath(basePath);
+  return getWeekCategories(weekPath);
 }
 
 /**

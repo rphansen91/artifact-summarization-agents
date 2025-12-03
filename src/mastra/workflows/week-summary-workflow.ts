@@ -2,10 +2,10 @@ import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { getCurrentWeekPath, getCurrentWeekCategories } from '../utils/week-utils';
+import { getCurrentWeekPath, getWeekCategories } from '../utils/week-utils';
 
 const weekSummaryInputSchema = z.object({
-  // No input required - auto-detects current week
+  weekPath: z.string().optional().describe('Custom week path - if not provided, auto-detects current week'),
 });
 
 const weekSummaryOutputSchema = z.object({
@@ -20,25 +20,47 @@ const generateWeekSummary = createStep({
   description: 'Generates a summary of all artifacts in the current week folder',
   inputSchema: weekSummaryInputSchema,
   outputSchema: weekSummaryOutputSchema,
-  execute: async ({ mastra }) => {
+  execute: async ({ mastra, inputData }) => {
     const agent = mastra?.getAgent('artifactAgent');
     if (!agent) {
       throw new Error('Artifact analysis agent not found');
     }
 
-    // Get current week path and categories
-    const currentWeekPath = getCurrentWeekPath();
-    const categories = await getCurrentWeekCategories();
-    const weekFolderName = currentWeekPath.split('/').pop() || 'unknown-week';
+    // Get week path and categories - use provided path or auto-detect current week
+    let weekPath: string;
+    if (inputData?.weekPath) {
+      // If weekPath is provided, combine it with the base path
+      const basePath = process.env.TARGET_PATH || `${process.env.HOME}/Documents/Artifacts`;
+      weekPath = join(basePath, inputData.weekPath);
+    } else {
+      // Auto-detect current week
+      weekPath = getCurrentWeekPath();
+    }
+    const categories = await getWeekCategories(weekPath);
+    const weekFolderName = weekPath.split('/').pop() || 'unknown-week';
 
-    console.log(`Generating summary for: ${currentWeekPath}`);
+    console.log(`Generating summary for: ${weekPath}`);
+
+    // Check if summary already exists and backup if it does
+    const summaryPath = join(weekPath, 'summary.md');
+    try {
+      await fs.access(summaryPath);
+      // File exists, create backup with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupPath = join(weekPath, `summary-${timestamp}.md`);
+      await fs.copyFile(summaryPath, backupPath);
+      console.log(`Existing summary backed up to: ${backupPath}`);
+    } catch (error) {
+      // File doesn't exist, no backup needed
+      console.log('No existing summary found, creating new one');
+    }
 
     // Scan all categories for artifacts
     const artifactsByCategory: Record<string, Array<{ title: string; filename: string; content: string }>> = {};
     let totalArtifacts = 0;
 
     for (const category of categories) {
-      const categoryPath = join(currentWeekPath, category);
+      const categoryPath = join(weekPath, category);
       artifactsByCategory[category] = [];
 
       try {
@@ -119,7 +141,7 @@ Format as markdown with clear headings and structure.`;
     ], {
       memory: {
         resource: 'artifact-analysis',
-        thread: currentWeekPath
+        thread: weekPath
       }
     });
 
@@ -127,14 +149,8 @@ Format as markdown with clear headings and structure.`;
       throw new Error('Failed to generate summary from agent');
     }
 
-    // Write summary to summary.md
-    const summaryPath = join(currentWeekPath, 'summary.md');
-    const summaryContent = `# Weekly Summary - ${weekFolderName}
-
-*Generated on: ${new Date().toLocaleDateString()}*
-*Total Artifacts: ${totalArtifacts}*
-
-${response.text}
+    // Write summary to summary.md (path already defined above)
+    const summaryContent = `${response.text}
 
 ---
 
@@ -142,7 +158,10 @@ ${response.text}
 
 ${categories.map(cat => `- **${cat}**: ${artifactsByCategory[cat].length} artifacts`).join('\n')}
 
-*This summary was automatically generated using AI analysis of all artifacts in this week's folder.*`;
+*This summary was automatically generated using AI analysis of all artifacts in this week's folder.*
+
+*Generated on: ${new Date().toLocaleDateString()}*
+*Total Artifacts: ${totalArtifacts}*`;
 
     await fs.writeFile(summaryPath, summaryContent, 'utf8');
 
