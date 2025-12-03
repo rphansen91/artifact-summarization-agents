@@ -1,10 +1,39 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { getArtifactsTree } from '@/app/actions';
+import { useRouter } from 'next/navigation';
+import { getArtifactsTree, TreeItem } from '@/app/actions';
 import { FileTree } from './FileTree';
 
-export async function Sidebar() {
-  const artifactsTree = await getArtifactsTree();
+export function Sidebar() {
+  const [artifactsTree, setArtifactsTree] = useState<TreeItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<TreeItem | null>(null);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    getArtifactsTree().then(setArtifactsTree);
+  }, []);
+
+  const handleItemSelect = (item: TreeItem) => {
+    setSelectedItem(item);
+    if (item.type === 'file') {
+      // Extract sessionId and filename from brain directory path
+      const brainDir = '/Users/ryanhansen/.gemini/antigravity/brain';
+      if (item.path.startsWith(brainDir)) {
+        const relativePath = item.path.replace(brainDir + '/', '');
+        const pathParts = relativePath.split('/');
+        if (pathParts.length >= 2) {
+          const sessionId = pathParts[0];
+          const filename = pathParts[pathParts.length - 1];
+          router.push(`/artifact/${sessionId}/${filename}`);
+        }
+      } else {
+        // For Documents Artifacts, use the file route with path parameter
+        router.push(`/file?path=${encodeURIComponent(item.path)}`);
+      }
+    }
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-indigo-500/20 flex flex-col z-50 rounded-none border-y-0 border-l-0">
@@ -46,7 +75,11 @@ export async function Sidebar() {
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
             Artifacts Browser
           </div>
-          <FileTree items={artifactsTree} />
+          <FileTree 
+            items={artifactsTree} 
+            selectedItem={selectedItem}
+            onItemSelect={handleItemSelect}
+          />
         </div>
       </nav>
 

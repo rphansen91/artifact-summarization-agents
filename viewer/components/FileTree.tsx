@@ -95,6 +95,11 @@ function FileTreeItem({
           )}
         </span>
         <span className="truncate">{item.name}</span>
+        {!isDirectory && !item.name.includes('.') && (
+          <span className="ml-1 text-xs bg-blue-600/20 text-blue-300 px-1.5 py-0.5 rounded-full">
+            group
+          </span>
+        )}
       </div>
 
       {isDirectory && isOpen && hasChildren && (
