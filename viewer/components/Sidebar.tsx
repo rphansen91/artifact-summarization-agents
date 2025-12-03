@@ -1,7 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
+import { getArtifactsTree } from '@/app/actions';
+import { FileTree } from './FileTree';
 
-export function Sidebar() {
+export async function Sidebar() {
+  const artifactsTree = await getArtifactsTree();
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-indigo-500/20 flex flex-col z-50 rounded-none border-y-0 border-l-0">
       <div className="p-6 border-b border-indigo-500/20">
@@ -37,6 +41,13 @@ export function Sidebar() {
           </svg>
           <span>Projects</span>
         </div>
+
+        <div className="mt-8">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
+            Artifacts Browser
+          </div>
+          <FileTree items={artifactsTree} />
+        </div>
       </nav>
 
       <div className="p-4 border-t border-indigo-500/20">
@@ -53,3 +64,4 @@ export function Sidebar() {
     </aside>
   );
 }
+
