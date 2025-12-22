@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <!-- Emerald gradient (primary) -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34d399"/>
+      <stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+    <!-- Zinc gradient (neutral/structure) -->
+    <linearGradient id="zincGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3f3f46"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <!-- Amber accent -->
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer gear ring - zinc -->
+  <g fill="url(#zincGrad)">
+    <!-- Gear teeth -->
+    <rect x="56" y="4" width="16" height="14" rx="2"/>
+    <rect x="56" y="110" width="16" height="14" rx="2"/>
+    <rect x="4" y="56" width="14" height="16" rx="2"/>
+    <rect x="110" y="56" width="14" height="16" rx="2"/>
+    
+    <!-- Diagonal teeth -->
+    <rect x="17" y="17" width="14" height="14" rx="2" transform="rotate(45 24 24)"/>
+    <rect x="97" y="17" width="14" height="14" rx="2" transform="rotate(45 104 24)"/>
+    <rect x="17" y="97" width="14" height="14" rx="2" transform="rotate(45 24 104)"/>
+    <rect x="97" y="97" width="14" height="14" rx="2" transform="rotate(45 104 104)"/>
+    
+    <!-- Main gear body -->
+    <circle cx="64" cy="64" r="42"/>
+  </g>
+  
+  <!-- Inner circle cutout - dark zinc -->
+  <circle cx="64" cy="64" r="32" fill="#18181b"/>
+  
+  <!-- Central artifact gem - emerald -->
+  <g transform="translate(64, 64)">
+    <!-- Gem body - hexagonal crystal shape -->
+    <polygon 
+      points="0,-28 24,-14 24,14 0,28 -24,14 -24,-14" 
+      fill="url(#emeraldGrad)"
+      stroke="#6ee7b7"
+      stroke-width="1"
+    />
+    
+    <!-- Gem facet highlights -->
+    <polygon 
+      points="0,-28 24,-14 0,0 -24,-14" 
+      fill="#6ee7b7" 
+      opacity="0.35"
+    />
+    <polygon 
+      points="0,-28 0,0 -24,-14" 
+      fill="#fff" 
+      opacity="0.15"
+    />
+    
+    <!-- Center core - amber accent -->
+    <circle cx="0" cy="0" r="6" fill="url(#amberGrad)"/>
+    <circle cx="0" cy="0" r="2.5" fill="#fef3c7"/>
+    
+    <!-- Connection lines radiating from center - amber -->
+    <g stroke="#fbbf24" stroke-width="1.5" opacity="0.9">
+      <line x1="0" y1="-6" x2="0" y2="-18"/>
+      <line x1="5.2" y1="3" x2="15.6" y2="9"/>
+      <line x1="-5.2" y1="3" x2="-15.6" y2="9"/>
+    </g>
+    
+    <!-- Small connection nodes - amber -->
+    <circle cx="0" cy="-20" r="2.5" fill="#fbbf24"/>
+    <circle cx="17" cy="10" r="2.5" fill="#fbbf24"/>
+    <circle cx="-17" cy="10" r="2.5" fill="#fbbf24"/>
+  </g>
+  
+  <!-- Orbital ring - emerald -->
+  <ellipse 
+    cx="64" cy="64" rx="50" ry="18" 
+    fill="none" 
+    stroke="url(#emeraldGrad)" 
+    stroke-width="2"
+    stroke-dasharray="8 4"
+    transform="rotate(-30 64 64)"
+    opacity="0.5"
+  />
+</svg>

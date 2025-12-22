@@ -21,13 +21,31 @@ let mainWindow: BrowserWindow | null = null;
 
 const isDev = process.env.NODE_ENV !== 'production' || !app.isPackaged;
 
+// Get the app icon path based on platform
+function getIconPath(): string {
+  const resourcesPath = isDev
+    ? path.join(__dirname, '..', '..', '..', 'resources')
+    : path.join(process.resourcesPath, 'resources');
+
+  if (process.platform === 'win32') {
+    return path.join(resourcesPath, 'icons', 'win', 'icon.ico');
+  } else if (process.platform === 'darwin') {
+    return path.join(resourcesPath, 'icons', 'mac', 'icon.icns');
+  } else {
+    return path.join(resourcesPath, 'icons', 'png', '512x512.png');
+  }
+}
+
 function createWindow(): void {
+  const iconPath = getIconPath();
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 600,
     minHeight: 400,
     title: 'Artifact Engine',
+    icon: iconPath,
     backgroundColor: '#0a0a0f',
     show: false,
     // Hide the title bar but keep window controls (macOS)
