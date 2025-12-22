@@ -19,7 +19,12 @@ protocol.registerSchemesAsPrivileged([
 
 let mainWindow: BrowserWindow | null = null;
 
-const isDev = process.env.NODE_ENV !== 'production' || !app.isPackaged;
+const isDev = !app.isPackaged;
+
+// Set app name early (before ready) for macOS dock tooltip
+if (process.platform === 'darwin') {
+  app.setName('Artifact Engine');
+}
 
 // Get the app icon path based on platform
 function getIconPath(): string {
@@ -93,9 +98,6 @@ function cleanup(): void {
 app.whenReady().then(async () => {
   console.log('Starting Artifact Engine...');
   console.log('Running in', isDev ? 'development' : 'production', 'mode');
-
-  // Set app name (needed for dev mode to show correct name in dock/menu)
-  app.setName('Artifact Engine');
 
   // Set dock icon on macOS (needed for dev mode)
   if (process.platform === 'darwin' && app.dock) {

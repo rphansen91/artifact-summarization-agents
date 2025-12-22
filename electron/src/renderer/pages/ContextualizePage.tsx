@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { WeekList, type Week } from '../components/contextualize'
+import { useGenerateSummary } from '../hooks'
 
 export function ContextualizePage() {
   const navigate = useNavigate()
@@ -8,37 +9,67 @@ export function ContextualizePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadWeeks() {
-      setIsLoading(true)
-      setError(null)
+  const loadWeeks = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
 
-      try {
-        const result = await window.electronAPI.getWeeks()
-        if (result.success) {
-          setWeeks(result.weeks || [])
-        } else {
-          setError(result.error || 'Failed to load weeks')
-        }
-      } catch (err) {
-        setError((err as Error).message)
-      } finally {
-        setIsLoading(false)
+    try {
+      const result = await window.electronAPI.getWeeks()
+      if (result.success) {
+        setWeeks(result.weeks || [])
+      } else {
+        setError(result.error || 'Failed to load weeks')
       }
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setIsLoading(false)
     }
-
-    loadWeeks()
   }, [])
+
+  useEffect(() => {
+    loadWeeks()
+  }, [loadWeeks])
+
+  const { generateSummary, isGenerating } = useGenerateSummary({
+    onSuccess: () => {
+      // Refresh weeks to get the new summary
+      loadWeeks()
+    },
+    onError: (weekId, errorMsg) => {
+      console.error(`Failed to generate summary for ${weekId}:`, errorMsg)
+      // Reset the week status back to pending
+      setWeeks(prev =>
+        prev.map(week =>
+          week.id === weekId
+            ? { ...week, summary: { ...week.summary, status: 'pending' as const } }
+            : week
+        )
+      )
+    },
+  })
 
   const handleViewWeek = (weekId: string) => {
     // Navigate to browse view with the selected week
     navigate(`/browse?weekId=${encodeURIComponent(weekId)}`)
   }
 
-  const handleGenerateSummary = (weekId: string) => {
-    console.log('Generate summary for:', weekId)
-    // TODO: Call Mastra API to generate summary
-  }
+  const handleGenerateSummary = useCallback(
+    (weekId: string) => {
+      // Update UI to show generating state immediately
+      setWeeks(prev =>
+        prev.map(week =>
+          week.id === weekId
+            ? { ...week, summary: { ...week.summary, status: 'generating' as const } }
+            : week
+        )
+      )
+
+      // Trigger the summary generation
+      generateSummary(weekId)
+    },
+    [generateSummary]
+  )
 
   const handleStartChat = (weekId: string) => {
     console.log('Start chat for:', weekId)
