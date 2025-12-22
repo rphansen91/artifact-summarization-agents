@@ -49,6 +49,7 @@ interface WeekSummary {
   status: 'pending' | 'generating' | 'generated';
   generatedAt: string | null;
   narrative: string | null;
+  fullContent: string | null;
   highlights: string[];
   stats: WeekStats;
 }
@@ -493,9 +494,9 @@ function parseWeekName(weekName: string): { label: string; dateRange: string } {
   return { label: weekName, dateRange: '' }
 }
 
-// Read week summary from week_summary.md file if it exists
+// Read week summary from summary.md file if it exists
 function readWeekSummary(weekPath: string): WeekSummary {
-  const summaryPath = path.join(weekPath, 'week_summary.md')
+  const summaryPath = path.join(weekPath, 'summary.md')
 
   const defaultStats: WeekStats = {
     commits: 0,
@@ -509,6 +510,7 @@ function readWeekSummary(weekPath: string): WeekSummary {
       status: 'pending',
       generatedAt: null,
       narrative: null,
+      fullContent: null,
       highlights: [],
       stats: defaultStats,
     }
@@ -572,6 +574,7 @@ function readWeekSummary(weekPath: string): WeekSummary {
       status: 'generated',
       generatedAt: stats.mtime.toISOString(),
       narrative: narrative || 'Weekly summary generated.',
+      fullContent: content,
       highlights: highlights.slice(0, 5),
       stats: defaultStats, // We'll calculate these from artifacts
     }
@@ -581,6 +584,7 @@ function readWeekSummary(weekPath: string): WeekSummary {
       status: 'pending',
       generatedAt: null,
       narrative: null,
+      fullContent: null,
       highlights: [],
       stats: defaultStats,
     }
@@ -623,6 +627,8 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
 
         // Count artifacts and categories
         let artifactCount = 0
+        let commitCount = 0
+        let captureCount = 0
         const categories: string[] = []
         const categoryStats: Record<string, number> = {}
 
@@ -640,6 +646,21 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
             categories.push(catName)
             categoryStats[catName] = mdFiles.length
             artifactCount += mdFiles.length
+
+            // Check each markdown file to classify as commit or capture
+            for (const mdFile of mdFiles) {
+              try {
+                const content = fs.readFileSync(path.join(catPath, mdFile), 'utf8')
+                if (content.includes('*This artifact was automatically generated from a Git commit.*')) {
+                  commitCount++
+                } else {
+                  captureCount++
+                }
+              } catch {
+                // If we can't read the file, count as capture
+                captureCount++
+              }
+            }
           }
         }
 
@@ -648,8 +669,8 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
 
         // Update stats with calculated values
         summary.stats = {
-          commits: 0, // Would need git integration to count
-          screenshots: artifactCount,
+          commits: commitCount,
+          screenshots: captureCount,
           ideas: 0,
           topCategory: Object.entries(categoryStats)
             .sort((a, b) => b[1] - a[1])[0]?.[0] || '',
@@ -843,5 +864,19 @@ export function registerIPCHandlers(): void {
   ipcMain.handle('get-weeks', async (): Promise<WeeksResult> => {
     console.log('[IPC] Getting weeks');
     return scanWeeksFolder();
+  });
+
+  // Get a single week by ID
+  ipcMain.handle('get-week-by-id', async (_event, weekId: string): Promise<{ success: boolean; week?: Week; error?: string }> => {
+    console.log('[IPC] Getting week by ID:', weekId);
+    const result = await scanWeeksFolder();
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+    const week = result.weeks?.find(w => w.id === weekId);
+    if (!week) {
+      return { success: false, error: 'Week not found' };
+    }
+    return { success: true, week };
   });
 }

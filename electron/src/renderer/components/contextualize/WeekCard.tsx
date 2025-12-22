@@ -12,7 +12,7 @@ export function WeekCard({
 
   return (
     <article
-      className="group relative bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden transition-all duration-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10"
+      className="group relative flex flex-col bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden transition-all duration-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10"
     >
       {/* Week Header */}
       <header className="p-5 pb-4 border-b border-zinc-100 dark:border-zinc-800">
@@ -87,7 +87,7 @@ export function WeekCard({
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="flex-1 p-5">
         {hasSummary && week.summary.narrative ? (
           <>
             {/* Narrative */}

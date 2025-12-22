@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { WeekList, type Week } from '../components/contextualize'
 
 export function ContextualizePage() {
+  const navigate = useNavigate()
   const [weeks, setWeeks] = useState<Week[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,8 +31,8 @@ export function ContextualizePage() {
   }, [])
 
   const handleViewWeek = (weekId: string) => {
-    console.log('View week:', weekId)
-    // TODO: Navigate to week detail view
+    // Navigate to browse view with the selected week
+    navigate(`/browse?weekId=${encodeURIComponent(weekId)}`)
   }
 
   const handleGenerateSummary = (weekId: string) => {

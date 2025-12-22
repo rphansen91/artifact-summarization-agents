@@ -68,6 +68,7 @@ export interface WeekSummary {
   status: 'pending' | 'generating' | 'generated';
   generatedAt: string | null;
   narrative: string | null;
+  fullContent: string | null;
   highlights: string[];
   stats: WeekStats;
 }
@@ -86,6 +87,12 @@ export interface Week {
 export interface WeeksResult {
   success: boolean;
   weeks?: Week[];
+  error?: string;
+}
+
+export interface WeekResult {
+  success: boolean;
+  week?: Week;
   error?: string;
 }
 
@@ -118,6 +125,7 @@ export interface ElectronAPI {
 
   // Contextualize
   getWeeks: () => Promise<WeeksResult>;
+  getWeekById: (weekId: string) => Promise<WeekResult>;
 }
 
 // Expose APIs to the renderer process
@@ -150,6 +158,7 @@ const electronAPI: ElectronAPI = {
 
   // Contextualize
   getWeeks: () => ipcRenderer.invoke('get-weeks'),
+  getWeekById: (weekId: string) => ipcRenderer.invoke('get-week-by-id', weekId),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

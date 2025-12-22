@@ -13,6 +13,7 @@ export interface WeekSummary {
   status: 'pending' | 'generating' | 'generated'
   generatedAt: string | null
   narrative: string | null
+  fullContent: string | null
   highlights: string[]
   stats: WeekStats
 }

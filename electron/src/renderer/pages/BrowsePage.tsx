@@ -3,10 +3,12 @@ import { useBrowse } from '../contexts/BrowseContext'
 
 export function BrowsePage() {
   const {
+    folderTree,
     artifacts,
     currentView,
     isLoading,
     error,
+    onSelectFolder,
     onSelectArtifact,
     onNavigateBreadcrumb,
     onToggleViewMode,
@@ -50,8 +52,10 @@ export function BrowsePage() {
   return (
     <div className="h-full">
       <ArtifactBrowser
+        folderTree={folderTree}
         artifacts={artifacts}
         currentView={currentView}
+        onSelectFolder={onSelectFolder}
         onSelectArtifact={onSelectArtifact}
         onNavigateBreadcrumb={onNavigateBreadcrumb}
         onToggleViewMode={onToggleViewMode}

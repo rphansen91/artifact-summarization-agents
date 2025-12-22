@@ -2,13 +2,18 @@ import { LayoutGrid, List, FolderOpen } from 'lucide-react'
 import { Breadcrumbs } from './Breadcrumbs'
 import { ArtifactCard } from './ArtifactCard'
 import { ArtifactDetail } from './ArtifactDetail'
-import type { Artifact, CurrentView, ViewMode } from './types'
+import { WeekDetailView } from './WeekDetailView'
+import type { Artifact, CurrentView, ViewMode, FolderNode } from './types'
 
 interface ArtifactBrowserContentProps {
+  /** The hierarchical folder tree for finding week nodes */
+  folderTree: FolderNode[]
   /** All artifacts available for display */
   artifacts: Artifact[]
   /** Current view state (selected folder, view mode, breadcrumbs) */
   currentView: CurrentView
+  /** Called when user selects a folder/category */
+  onSelectFolder?: (folderId: string) => void
   /** Called when user clicks an artifact to view its detail */
   onSelectArtifact?: (artifactId: string) => void
   /** Called when user clicks a breadcrumb to navigate */
@@ -18,14 +23,34 @@ interface ArtifactBrowserContentProps {
 }
 
 export function ArtifactBrowser({
+  folderTree,
   artifacts,
   currentView,
+  onSelectFolder,
   onSelectArtifact,
   onNavigateBreadcrumb,
   onToggleViewMode
 }: ArtifactBrowserContentProps) {
-  // Get artifacts for current folder
-  const folderArtifacts = currentView.selectedFolderId
+  // Check if we're viewing a week (last breadcrumb is type 'week')
+  const lastBreadcrumb = currentView.breadcrumbs[currentView.breadcrumbs.length - 1]
+  const isWeekView = lastBreadcrumb?.type === 'week'
+  const weekId = isWeekView ? lastBreadcrumb.id : null
+
+  // Find the week node in the folder tree
+  const findWeekNode = (weekId: string): FolderNode | null => {
+    for (const year of folderTree) {
+      if (year.children) {
+        const week = year.children.find(w => w.id === weekId)
+        if (week) return week
+      }
+    }
+    return null
+  }
+
+  const weekNode = weekId ? findWeekNode(weekId) : null
+
+  // Get artifacts for current folder (only when viewing a category, not a week)
+  const folderArtifacts = currentView.selectedFolderId && !isWeekView
     ? artifacts.filter(a => a.categoryId === currentView.selectedFolderId)
     : []
 
@@ -87,6 +112,12 @@ export function ArtifactBrowser({
       <div className="flex-1 overflow-y-auto p-6">
         {currentView.type === 'artifact' && selectedArtifact ? (
           <ArtifactDetail artifact={selectedArtifact} />
+        ) : isWeekView && weekNode && weekId ? (
+          <WeekDetailView
+            weekId={weekId}
+            weekNode={weekNode}
+            onSelectCategory={(categoryId) => onSelectFolder?.(categoryId)}
+          />
         ) : currentView.type === 'folder' ? (
           folderArtifacts.length > 0 ? (
             <div

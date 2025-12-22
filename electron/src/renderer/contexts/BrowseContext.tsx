@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { FolderNode, Artifact, CurrentView, ViewMode, Breadcrumb } from '../components/browse/types'
 
 interface BrowseContextValue {
@@ -9,6 +10,7 @@ interface BrowseContextValue {
   error: string | null
   onToggleFolder: (folderId: string) => void
   onSelectFolder: (folderId: string) => void
+  onSelectWeek: (weekId: string) => void
   onSelectArtifact: (artifactId: string) => void
   onNavigateBreadcrumb: (breadcrumbId: string) => void
   onToggleViewMode: (mode: ViewMode) => void
@@ -29,6 +31,7 @@ interface BrowseProviderProps {
 }
 
 export function BrowseProvider({ children }: BrowseProviderProps) {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [folderTree, setFolderTree] = useState<FolderNode[]>([])
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -38,6 +41,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     viewMode: 'grid',
     breadcrumbs: [{ id: 'root', name: 'Artifacts', type: 'root' }],
   })
+  const initialWeekId = useRef(searchParams.get('weekId'))
 
   // Load artifacts from the main process
   useEffect(() => {
@@ -62,6 +66,79 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
 
     loadArtifacts()
   }, [])
+
+  // Navigate to initial week from URL params after loading
+  useEffect(() => {
+    if (!isLoading && folderTree.length > 0 && initialWeekId.current) {
+      // Find the week in the tree
+      let found = false
+      for (const year of folderTree) {
+        if (year.children) {
+          const week = year.children.find(w => w.id === initialWeekId.current)
+          if (week) {
+            found = true
+            break
+          }
+        }
+      }
+
+      if (found) {
+        // Build breadcrumbs and expand tree for the week
+        let weekNode: FolderNode | null = null
+        let yearNode: FolderNode | null = null
+
+        for (const year of folderTree) {
+          if (year.children) {
+            const week = year.children.find(w => w.id === initialWeekId.current)
+            if (week) {
+              weekNode = week
+              yearNode = year
+              break
+            }
+          }
+        }
+
+        if (weekNode && yearNode) {
+          const breadcrumbs: Breadcrumb[] = [
+            { id: 'root', name: 'Artifacts', type: 'root' },
+            { id: yearNode.id, name: yearNode.name, type: 'year' },
+            { id: weekNode.id, name: weekNode.name, type: 'week' },
+          ]
+
+          setCurrentView({
+            type: 'folder',
+            viewMode: 'grid',
+            selectedFolderId: initialWeekId.current,
+            breadcrumbs,
+          })
+
+          // Expand the year and week nodes
+          setFolderTree(prevTree => {
+            return prevTree.map(year => {
+              if (year.id === yearNode!.id) {
+                return {
+                  ...year,
+                  isExpanded: true,
+                  children: year.children?.map(week => {
+                    if (week.id === initialWeekId.current) {
+                      return { ...week, isExpanded: true }
+                    }
+                    return week
+                  }),
+                }
+              }
+              return year
+            })
+          })
+        }
+      }
+
+      // Clear the ref so this doesn't run again
+      initialWeekId.current = null
+      // Clear URL params
+      setSearchParams({})
+    }
+  }, [isLoading, folderTree, setSearchParams])
 
   // Find a node in the folder tree
   const findNode = useCallback((nodes: FolderNode[], id: string): FolderNode | null => {
@@ -148,6 +225,64 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     })
   }, [folderTree, findNode, findParentPath, currentView.viewMode])
 
+  // Select a week (navigate to week view showing its categories)
+  const onSelectWeek = useCallback((weekId: string) => {
+    // Find the week node in the tree
+    let weekNode: FolderNode | null = null
+    let yearNode: FolderNode | null = null
+
+    for (const year of folderTree) {
+      if (year.children) {
+        const week = year.children.find(w => w.id === weekId)
+        if (week) {
+          weekNode = week
+          yearNode = year
+          break
+        }
+      }
+    }
+
+    if (!weekNode || !yearNode) return
+
+    // Build breadcrumbs: Root > Year > Week
+    const breadcrumbs: Breadcrumb[] = [
+      { id: 'root', name: 'Artifacts', type: 'root' },
+      { id: yearNode.id, name: yearNode.name, type: 'year' },
+      { id: weekNode.id, name: weekNode.name, type: 'week' },
+    ]
+
+    setCurrentView({
+      type: 'folder',
+      viewMode: currentView.viewMode,
+      selectedFolderId: weekId,
+      breadcrumbs,
+    })
+
+    // Expand the year and week nodes
+    setFolderTree(prevTree => {
+      return prevTree.map(year => {
+        if (year.id === yearNode!.id) {
+          return {
+            ...year,
+            isExpanded: true,
+            children: year.children?.map(week => {
+              if (week.id === weekId) {
+                return { ...week, isExpanded: true }
+              }
+              return week
+            }),
+          }
+        }
+        return year
+      })
+    })
+
+    // Clear the weekId from URL params after navigation
+    if (searchParams.has('weekId')) {
+      setSearchParams({})
+    }
+  }, [folderTree, currentView.viewMode, searchParams, setSearchParams])
+
   // Select an artifact
   const onSelectArtifact = useCallback((artifactId: string) => {
     const artifact = artifacts.find(a => a.id === artifactId)
@@ -210,6 +345,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     error,
     onToggleFolder,
     onSelectFolder,
+    onSelectWeek,
     onSelectArtifact,
     onNavigateBreadcrumb,
     onToggleViewMode,
