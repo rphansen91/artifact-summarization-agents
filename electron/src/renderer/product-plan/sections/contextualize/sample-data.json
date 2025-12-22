@@ -1,0 +1,423 @@
+{
+  "_meta": {
+    "models": {
+      "weeks": "Each week represents a time period containing your captured artifacts and an AI-generated summary of your work.",
+      "chatThreads": "Chat threads are conversations you start to ask questions about a specific week's artifacts.",
+      "chatMessages": "Individual messages within a chat thread — your questions and the AI's responses."
+    },
+    "relationships": [
+      "Each Week has one Summary (narrative recap plus highlights and stats)",
+      "Each Week can have multiple Chat Threads for different lines of inquiry",
+      "Each Chat Thread contains multiple Chat Messages (the conversation history)",
+      "Chat Messages may reference Artifacts from the week being discussed"
+    ]
+  },
+  "weeks": [
+    {
+      "id": "week-2024-47",
+      "label": "Week 47",
+      "dateRange": "Nov 17 - Nov 23",
+      "year": 2024,
+      "artifactCount": 34,
+      "categories": ["Code", "Terminal", "Architecture", "AI_Agents"],
+      "summary": {
+        "status": "generated",
+        "generatedAt": "2024-11-23T18:30:00Z",
+        "narrative": "This week centered on building the authentication layer for the new API. You implemented JWT token refresh logic, wrote integration tests covering edge cases, and debugged a tricky race condition in the session manager. The week ended with a successful security review and green CI across all repos.",
+        "highlights": [
+          "Completed JWT refresh token implementation",
+          "Fixed race condition in SessionManager.ts",
+          "Passed security audit with zero critical findings"
+        ],
+        "stats": {
+          "commits": 23,
+          "screenshots": 8,
+          "ideas": 3,
+          "topCategory": "Code"
+        }
+      },
+      "threadCount": 8
+    },
+    {
+      "id": "week-2024-46",
+      "label": "Week 46",
+      "dateRange": "Nov 10 - Nov 16",
+      "year": 2024,
+      "artifactCount": 28,
+      "categories": ["Code", "Product", "Client_Work", "Performance"],
+      "summary": {
+        "status": "generated",
+        "generatedAt": "2024-11-16T17:45:00Z",
+        "narrative": "A split week between client deliverables and internal tooling. You shipped the dashboard redesign for Acme Corp on Tuesday, then pivoted to performance profiling on the main app. Identified a memory leak in the chart rendering library that was causing slowdowns on large datasets.",
+        "highlights": [
+          "Shipped Acme Corp dashboard redesign",
+          "Identified memory leak in ChartRenderer",
+          "Reduced bundle size by 18% via tree-shaking"
+        ],
+        "stats": {
+          "commits": 19,
+          "screenshots": 6,
+          "ideas": 3,
+          "topCategory": "Client_Work"
+        }
+      },
+      "threadCount": 1
+    },
+    {
+      "id": "week-2024-45",
+      "label": "Week 45",
+      "dateRange": "Nov 3 - Nov 9",
+      "year": 2024,
+      "artifactCount": 41,
+      "categories": ["Code", "Terminal", "Architecture", "AI_Agents", "Product"],
+      "summary": {
+        "status": "generated",
+        "generatedAt": "2024-11-09T19:00:00Z",
+        "narrative": "Heavy architecture week. You designed the event sourcing system for the new analytics pipeline, wrote the initial Mastra agent for automated code review, and spent Friday exploring different embedding models for the semantic search feature. Lots of research artifacts captured.",
+        "highlights": [
+          "Designed event sourcing architecture for analytics",
+          "Built first Mastra agent for code review",
+          "Evaluated 4 embedding models for semantic search"
+        ],
+        "stats": {
+          "commits": 31,
+          "screenshots": 7,
+          "ideas": 3,
+          "topCategory": "Architecture"
+        }
+      },
+      "threadCount": 0
+    },
+    {
+      "id": "week-2024-44",
+      "label": "Week 44",
+      "dateRange": "Oct 27 - Nov 2",
+      "year": 2024,
+      "artifactCount": 22,
+      "categories": ["Code", "Random", "Product"],
+      "summary": {
+        "status": "pending",
+        "generatedAt": null,
+        "narrative": null,
+        "highlights": [],
+        "stats": {
+          "commits": 15,
+          "screenshots": 5,
+          "ideas": 2,
+          "topCategory": "Code"
+        }
+      },
+      "threadCount": 0
+    }
+  ],
+  "chatThreads": [
+    {
+      "id": "thread-001",
+      "weekId": "week-2024-47",
+      "title": "Understanding the JWT implementation",
+      "createdAt": "2024-11-22T10:15:00Z",
+      "updatedAt": "2024-11-22T11:45:00Z",
+      "messageCount": 12
+    },
+    {
+      "id": "thread-002",
+      "weekId": "week-2024-47",
+      "title": "Race condition debugging steps",
+      "createdAt": "2024-11-23T14:20:00Z",
+      "updatedAt": "2024-11-23T14:45:00Z",
+      "messageCount": 6
+    },
+    {
+      "id": "thread-003",
+      "weekId": "week-2024-46",
+      "title": "Memory leak investigation",
+      "createdAt": "2024-11-15T09:00:00Z",
+      "updatedAt": "2024-11-15T09:28:00Z",
+      "messageCount": 5
+    },
+    {
+      "id": "thread-004",
+      "weekId": "week-2024-47",
+      "title": "Security audit preparation",
+      "createdAt": "2024-11-21T09:00:00Z",
+      "updatedAt": "2024-11-21T09:45:00Z",
+      "messageCount": 4
+    },
+    {
+      "id": "thread-005",
+      "weekId": "week-2024-47",
+      "title": "API endpoint design decisions",
+      "createdAt": "2024-11-20T14:00:00Z",
+      "updatedAt": "2024-11-20T14:30:00Z",
+      "messageCount": 3
+    },
+    {
+      "id": "thread-006",
+      "weekId": "week-2024-47",
+      "title": "Test coverage analysis",
+      "createdAt": "2024-11-19T11:00:00Z",
+      "updatedAt": "2024-11-19T11:20:00Z",
+      "messageCount": 2
+    },
+    {
+      "id": "thread-007",
+      "weekId": "week-2024-47",
+      "title": "Error handling patterns",
+      "createdAt": "2024-11-18T16:00:00Z",
+      "updatedAt": "2024-11-18T16:15:00Z",
+      "messageCount": 2
+    },
+    {
+      "id": "thread-008",
+      "weekId": "week-2024-47",
+      "title": "Middleware architecture review",
+      "createdAt": "2024-11-17T10:00:00Z",
+      "updatedAt": "2024-11-17T10:30:00Z",
+      "messageCount": 3
+    },
+    {
+      "id": "thread-009",
+      "weekId": "week-2024-47",
+      "title": "Session management overview",
+      "createdAt": "2024-11-17T14:00:00Z",
+      "updatedAt": "2024-11-17T14:25:00Z",
+      "messageCount": 2
+    },
+    {
+      "id": "thread-010",
+      "weekId": "week-2024-47",
+      "title": "CI/CD pipeline questions",
+      "createdAt": "2024-11-18T09:00:00Z",
+      "updatedAt": "2024-11-18T09:10:00Z",
+      "messageCount": 2
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": "msg-001",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "What was the main approach I used for the JWT refresh token logic?",
+      "timestamp": "2024-11-22T10:15:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-002",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "Based on your commits and screenshots this week, you implemented a sliding window refresh strategy. The key insight was storing the refresh token in an httpOnly cookie rather than localStorage for security. You created a `TokenRefreshMiddleware` that intercepts 401 responses and automatically attempts a refresh before retrying the original request.",
+      "timestamp": "2024-11-22T10:16:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-001",
+          "type": "commit",
+          "title": "feat: implement TokenRefreshMiddleware",
+          "category": "Code"
+        },
+        {
+          "id": "artifact-jwt-002",
+          "type": "screenshot",
+          "title": "JWT flow diagram whiteboard",
+          "category": "Architecture"
+        }
+      ]
+    },
+    {
+      "id": "msg-003",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "Were there any edge cases I handled?",
+      "timestamp": "2024-11-22T10:28:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-004",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "Yes, you covered several edge cases in your tests:\n\n1. **Concurrent requests during refresh** — You implemented a request queue that holds pending requests while a refresh is in progress, then replays them with the new token.\n\n2. **Refresh token expiry** — If the refresh token itself has expired, you redirect to login rather than entering a refresh loop.\n\n3. **Network failures during refresh** — You added retry logic with exponential backoff, giving up after 3 attempts.\n\nThe test file `token-refresh.test.ts` has 12 test cases covering these scenarios.",
+      "timestamp": "2024-11-22T10:32:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-003",
+          "type": "commit",
+          "title": "test: add edge case coverage for token refresh",
+          "category": "Code"
+        }
+      ]
+    },
+    {
+      "id": "msg-005",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "How does the request queue work exactly?",
+      "timestamp": "2024-11-22T10:45:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-006",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "The request queue is implemented using a promise-based pattern in `TokenRefreshMiddleware.ts`. Here's how it works:\n\n1. **Queue initialization**: When the first 401 is detected, a refresh promise is created and stored.\n\n2. **Subsequent requests**: Any requests that come in while refresh is in progress are added to a waiting array. Each gets their own promise that resolves when the refresh completes.\n\n3. **Replay mechanism**: Once the new token arrives, all queued requests are replayed with the updated Authorization header.\n\n4. **Cleanup**: The queue is cleared and the refresh promise is nullified, ready for the next cycle.\n\nYour terminal screenshots from Tuesday afternoon show you testing this with 10 concurrent requests — all succeeded after a single refresh.",
+      "timestamp": "2024-11-22T10:48:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-004",
+          "type": "screenshot",
+          "title": "Terminal showing concurrent request test",
+          "category": "Terminal"
+        },
+        {
+          "id": "artifact-jwt-005",
+          "type": "commit",
+          "title": "feat: add request queue to TokenRefreshMiddleware",
+          "category": "Code"
+        }
+      ]
+    },
+    {
+      "id": "msg-007",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "What about the token storage security considerations?",
+      "timestamp": "2024-11-22T11:00:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-008",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "Your architecture notes from Monday cover this in detail. The key security decisions were:\n\n**Access Token (short-lived, 15 min):**\n- Stored in memory only (JavaScript variable)\n- Never persisted to localStorage or sessionStorage\n- XSS attacks can't steal it from storage\n\n**Refresh Token (long-lived, 7 days):**\n- Stored in httpOnly cookie\n- `Secure` flag ensures HTTPS only\n- `SameSite=Strict` prevents CSRF\n- Not accessible via JavaScript at all\n\n**Token rotation:**\n- Each refresh invalidates the old refresh token\n- Prevents replay attacks if a token is somehow compromised\n\nYour whiteboard diagram shows this flow clearly.",
+      "timestamp": "2024-11-22T11:05:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-006",
+          "type": "screenshot",
+          "title": "Token storage architecture whiteboard",
+          "category": "Architecture"
+        },
+        {
+          "id": "artifact-jwt-007",
+          "type": "idea",
+          "title": "Consider adding fingerprinting to refresh tokens",
+          "category": "Architecture"
+        }
+      ]
+    },
+    {
+      "id": "msg-009",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "Did I add any logging or monitoring for the auth flow?",
+      "timestamp": "2024-11-22T11:20:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-010",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "Yes, you added comprehensive observability. Looking at your commits from Wednesday:\n\n**Structured logging:**\n- Each auth event (login, refresh, logout) logs to your existing Pino logger\n- Includes user ID (hashed), timestamp, and event type\n- Sensitive data (tokens) are never logged\n\n**Metrics:**\n- `auth_refresh_total` — Counter for refresh attempts\n- `auth_refresh_duration_ms` — Histogram for refresh latency\n- `auth_refresh_failures` — Counter with failure reason labels\n\n**Alerting:**\n- You configured a Grafana alert for refresh failure rate > 5% over 5 minutes\n\nYour terminal screenshot shows the Prometheus metrics endpoint returning the expected format.",
+      "timestamp": "2024-11-22T11:25:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-008",
+          "type": "commit",
+          "title": "feat: add Prometheus metrics for auth flow",
+          "category": "Code"
+        },
+        {
+          "id": "artifact-jwt-009",
+          "type": "screenshot",
+          "title": "Grafana dashboard with auth metrics",
+          "category": "Terminal"
+        }
+      ]
+    },
+    {
+      "id": "msg-011",
+      "threadId": "thread-001",
+      "role": "user",
+      "content": "What's next for the auth system?",
+      "timestamp": "2024-11-22T11:40:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-012",
+      "threadId": "thread-001",
+      "role": "assistant",
+      "content": "Based on your captured ideas and the security audit feedback, here's what's planned:\n\n**Short-term (next sprint):**\n- Add device fingerprinting to refresh tokens for extra security\n- Implement \"remember me\" functionality with extended refresh token lifetime\n- Add session listing UI so users can see/revoke active sessions\n\n**Medium-term:**\n- OAuth2 provider integration (Google, GitHub) for SSO\n- WebAuthn/passkey support as a second factor\n- Rate limiting on the token endpoint\n\n**Nice-to-have:**\n- Biometric unlock for mobile apps\n- Hardware security key support\n\nYou captured an idea on Thursday about using the browser's Credential Management API for smoother UX — that might be worth exploring for the SSO work.",
+      "timestamp": "2024-11-22T11:45:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-jwt-010",
+          "type": "idea",
+          "title": "Explore Credential Management API for SSO",
+          "category": "Product"
+        },
+        {
+          "id": "artifact-jwt-011",
+          "type": "screenshot",
+          "title": "Security audit recommendations document",
+          "category": "Architecture"
+        }
+      ]
+    },
+    {
+      "id": "msg-013",
+      "threadId": "thread-002",
+      "role": "user",
+      "content": "Walk me through how I found and fixed the race condition in SessionManager",
+      "timestamp": "2024-11-23T14:20:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-014",
+      "threadId": "thread-002",
+      "role": "assistant",
+      "content": "Looking at your terminal captures and commits from Wednesday and Thursday, here's the debugging journey:\n\n**Discovery**: You noticed intermittent test failures in CI where session state was undefined. Your terminal screenshots show you adding extensive logging to `SessionManager.ts`.\n\n**Root cause**: The `initSession()` method was being called from two places simultaneously — the auth callback and a React useEffect. Both were racing to set the session state.\n\n**Fix**: You introduced a mutex lock using a simple promise-based pattern. The second caller now awaits the first initialization rather than starting a parallel one.",
+      "timestamp": "2024-11-23T14:22:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-race-001",
+          "type": "screenshot",
+          "title": "Terminal logging output showing race",
+          "category": "Terminal"
+        },
+        {
+          "id": "artifact-race-002",
+          "type": "commit",
+          "title": "fix: add mutex lock to SessionManager.initSession",
+          "category": "Code"
+        }
+      ]
+    },
+    {
+      "id": "msg-015",
+      "threadId": "thread-003",
+      "role": "user",
+      "content": "What caused the memory leak in the chart rendering?",
+      "timestamp": "2024-11-15T09:00:00Z",
+      "referencedArtifacts": []
+    },
+    {
+      "id": "msg-016",
+      "threadId": "thread-003",
+      "role": "assistant",
+      "content": "Based on your performance captures from Thursday, the memory leak was in the `ChartRenderer` component. Each time the chart data updated, you were creating new animation frame callbacks without canceling the previous ones. Over time with large datasets, this accumulated thousands of stale callbacks.\n\nYour heap snapshot screenshots show the retained objects growing linearly with each data refresh.",
+      "timestamp": "2024-11-15T09:03:00Z",
+      "referencedArtifacts": [
+        {
+          "id": "artifact-mem-001",
+          "type": "screenshot",
+          "title": "Chrome DevTools heap snapshot",
+          "category": "Performance"
+        },
+        {
+          "id": "artifact-mem-002",
+          "type": "screenshot",
+          "title": "Memory timeline showing growth pattern",
+          "category": "Performance"
+        }
+      ]
+    }
+  ]
+}

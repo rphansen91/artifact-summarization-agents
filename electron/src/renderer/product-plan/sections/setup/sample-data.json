@@ -1,0 +1,114 @@
+{
+  "_meta": {
+    "models": {
+      "setupConfig": "The current configuration state of Artifact Engine, including the artifacts folder location, API key status, and automation installation state.",
+      "setupSteps": "The wizard steps that guide users through initial setup, each with a title, description, and completion status.",
+      "repositories": "Git repositories the user can connect for automatic commit tracking via post-commit hooks.",
+      "workflows": "Configured automations that run in the background to capture artifacts without user intervention."
+    },
+    "relationships": [
+      "SetupConfig tracks the overall state of the setup wizard",
+      "Each SetupStep represents one stage of the configuration process",
+      "Repositories are added during Step 4 and generate Artifacts via git hooks",
+      "Workflows are created when automations are installed (screenshot capture, git hooks)"
+    ]
+  },
+  "setupConfig": {
+    "artifactsFolder": "/Users/alex/Documents/Artifacts",
+    "artifactsFolderSet": true,
+    "apiKey": "sk-xxxx",
+    "apiKeySet": true,
+    "automationInstalled": true,
+    "automationPlatform": "mac",
+    "currentStep": 4,
+    "isComplete": false
+  },
+  "setupSteps": [
+    {
+      "id": "step-1",
+      "stepNumber": 1,
+      "title": "Artifacts Folder",
+      "description": "Choose where your artifacts will be stored. This folder will contain your year/week/category structure.",
+      "isComplete": true,
+      "isActive": false
+    },
+    {
+      "id": "step-2",
+      "stepNumber": 2,
+      "title": "API Key",
+      "description": "Enter your Mastra API key to enable AI-powered artifact analysis and contextualization.",
+      "isComplete": true,
+      "isActive": false
+    },
+    {
+      "id": "step-3",
+      "stepNumber": 3,
+      "title": "Screenshot Automation",
+      "description": "Install the screenshot capture automation. Press a keyboard shortcut to capture and analyze your screen.",
+      "isComplete": true,
+      "isActive": false
+    },
+    {
+      "id": "step-4",
+      "stepNumber": 4,
+      "title": "Git Repositories",
+      "description": "Select repositories to track. Commits will be automatically captured and summarized.",
+      "isComplete": false,
+      "isActive": true
+    }
+  ],
+  "repositories": [
+    {
+      "id": "repo-1",
+      "name": "artifact-engine",
+      "path": "/Users/alex/Projects/artifact-engine",
+      "isConnected": true,
+      "lastCommitDate": "2024-12-19T14:32:00Z",
+      "commitCount": 47
+    },
+    {
+      "id": "repo-2",
+      "name": "client-dashboard",
+      "path": "/Users/alex/Projects/client-dashboard",
+      "isConnected": true,
+      "lastCommitDate": "2024-12-18T09:15:00Z",
+      "commitCount": 123
+    },
+    {
+      "id": "repo-3",
+      "name": "personal-site",
+      "path": "/Users/alex/Projects/personal-site",
+      "isConnected": false,
+      "lastCommitDate": "2024-12-10T16:45:00Z",
+      "commitCount": 28
+    },
+    {
+      "id": "repo-4",
+      "name": "dotfiles",
+      "path": "/Users/alex/.dotfiles",
+      "isConnected": false,
+      "lastCommitDate": "2024-11-28T11:20:00Z",
+      "commitCount": 89
+    }
+  ],
+  "workflows": [
+    {
+      "id": "workflow-1",
+      "name": "Screenshot Capture",
+      "type": "screenshot",
+      "description": "Captures screen via keyboard shortcut, analyzes with AI, and files to appropriate category.",
+      "isInstalled": true,
+      "shortcut": "⌘ + Shift + A",
+      "platform": "mac"
+    },
+    {
+      "id": "workflow-2",
+      "name": "Git Commit Hook",
+      "type": "git-hook",
+      "description": "Automatically captures and summarizes commits from connected repositories.",
+      "isInstalled": true,
+      "connectedRepos": 2,
+      "platform": "cross-platform"
+    }
+  ]
+}

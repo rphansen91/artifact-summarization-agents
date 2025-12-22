@@ -1,0 +1,5 @@
+export { SetupPage } from './SetupPage'
+export { CapturePage } from './CapturePage'
+export { ContextualizePage } from './ContextualizePage'
+export { BrowsePage } from './BrowsePage'
+export { SettingsPage } from './SettingsPage'

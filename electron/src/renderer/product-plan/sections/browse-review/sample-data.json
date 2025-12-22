@@ -1,0 +1,231 @@
+{
+  "_meta": {
+    "models": {
+      "folderTree": "The hierarchical navigation structure showing Years containing Weeks containing Categories. Each node can be expanded/collapsed and shows item counts for leaf folders.",
+      "artifacts": "Captured pieces of work consisting of a screenshot (.png) paired with an AI-generated markdown summary (.md) sharing the same base filename.",
+      "weeks": "Temporal containers that group artifacts by category. Each week spans 7 days and forms a 'chapter' of the user's work history.",
+      "categories": "Folders within a week that organize artifacts by type (Code, Terminal, Performance, Architecture, AI_Agents, etc.)."
+    },
+    "relationships": [
+      "FolderTree contains Years, which contain Weeks, which contain Categories",
+      "Categories contain Artifacts (the leaf nodes)",
+      "Each Artifact belongs to exactly one Category within one Week",
+      "Artifacts have paired .png and .md files with the same base filename"
+    ]
+  },
+  "folderTree": [
+    {
+      "id": "year-2025",
+      "name": "2025",
+      "type": "year",
+      "isExpanded": true,
+      "children": [
+        {
+          "id": "week-2025-02",
+          "name": "Week_02_Jan6-Jan12",
+          "type": "week",
+          "isExpanded": false,
+          "children": [
+            { "id": "cat-2025-02-code", "name": "1-Code", "type": "category", "itemCount": 4 },
+            { "id": "cat-2025-02-terminal", "name": "2-Terminal", "type": "category", "itemCount": 2 },
+            { "id": "cat-2025-02-ai", "name": "5-AI_Agents", "type": "category", "itemCount": 1 }
+          ]
+        },
+        {
+          "id": "week-2025-01",
+          "name": "Week_01_Dec30-Jan5",
+          "type": "week",
+          "isExpanded": false,
+          "children": [
+            { "id": "cat-2025-01-code", "name": "1-Code", "type": "category", "itemCount": 6 },
+            { "id": "cat-2025-01-arch", "name": "4-Architecture", "type": "category", "itemCount": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "year-2024",
+      "name": "2024",
+      "type": "year",
+      "isExpanded": true,
+      "children": [
+        {
+          "id": "week-2024-51",
+          "name": "Week_51_Dec16-Dec22",
+          "type": "week",
+          "isExpanded": false,
+          "children": [
+            { "id": "cat-2024-51-code", "name": "1-Code", "type": "category", "itemCount": 8 },
+            { "id": "cat-2024-51-terminal", "name": "2-Terminal", "type": "category", "itemCount": 3 },
+            { "id": "cat-2024-51-perf", "name": "3-Performance", "type": "category", "itemCount": 1 }
+          ]
+        },
+        {
+          "id": "week-2024-47",
+          "name": "Week_47_Nov17-Nov23",
+          "type": "week",
+          "isExpanded": true,
+          "children": [
+            { "id": "cat-2024-47-code", "name": "1-Code", "type": "category", "itemCount": 7 },
+            { "id": "cat-2024-47-terminal", "name": "2-Terminal", "type": "category", "itemCount": 2 },
+            { "id": "cat-2024-47-perf", "name": "3-Performance", "type": "category", "itemCount": 0 },
+            { "id": "cat-2024-47-arch", "name": "4-Architecture", "type": "category", "itemCount": 1 },
+            { "id": "cat-2024-47-ai", "name": "5-AI_Agents", "type": "category", "itemCount": 3 }
+          ]
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact-001",
+      "name": "artifact-summarization-engine-readme",
+      "title": "Artifact Summarization Engine README in VSCode",
+      "categoryId": "cat-2024-47-code",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "1-Code",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/artifact-summarization-engine-readme.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/artifact-summarization-engine-readme.md",
+      "markdownContent": "# Artifact Summarization Engine README in VSCode\n\nThis screenshot captures a Visual Studio Code (VSCode) environment displaying the README.md file for an \"Artifact Summarization Engine.\" The project is built using the Mastra framework, a TypeScript-based tool for AI workflows. The README outlines features such as AI processing pipelines, agent specialization for screenshot analysis, and integration with macOS Automator.\n\nThe document provides installation instructions, including cloning the repository and building the application using npm. The terminal section at the bottom shows instructions for enabling and disabling file logging, with environment variable configurations for debugging.\n\nThis setup is crucial for developers looking to implement structured logging and debugging in their AI-driven projects. The presence of a terminal and code editor highlights the development and configuration aspects of the project, making it a valuable resource for developers working on similar AI and automation tasks.",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-19T14:32:00Z"
+    },
+    {
+      "id": "artifact-002",
+      "name": "analyze-commit-pipeline",
+      "title": "Git Commit Analysis Pipeline Implementation",
+      "categoryId": "cat-2024-47-code",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "1-Code",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/analyze-commit-pipeline.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/analyze-commit-pipeline.md",
+      "markdownContent": "# Git Commit Analysis Pipeline Implementation\n\nThis screenshot shows the implementation of a git commit analysis pipeline in TypeScript. The code uses Mastra's agent framework to process commit diffs and generate structured summaries.\n\nKey components visible:\n- CommitAnalyzer class with async processing methods\n- Integration with OpenAI for natural language summarization\n- Structured output format for artifact generation\n\nThe pipeline extracts commit metadata, analyzes code changes, and produces human-readable summaries that are stored as markdown artifacts.",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-19T10:15:00Z"
+    },
+    {
+      "id": "artifact-003",
+      "name": "async-agent-workflow",
+      "title": "Async Agent Workflow Pattern",
+      "categoryId": "cat-2024-47-code",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "1-Code",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/async-agent-workflow.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/async-agent-workflow.md",
+      "markdownContent": "# Async Agent Workflow Pattern\n\nImplementation of an asynchronous agent workflow using the Mastra framework. This pattern allows multiple AI agents to process artifacts concurrently while maintaining order and consistency.\n\nThe workflow demonstrates:\n- Promise-based agent coordination\n- Error handling and retry logic\n- Progress tracking for long-running operations",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-18T16:45:00Z"
+    },
+    {
+      "id": "artifact-004",
+      "name": "mac-automator-shortcut",
+      "title": "macOS Automator Screenshot Shortcut",
+      "categoryId": "cat-2024-47-code",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "1-Code",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/mac-automator-shortcut.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/mac-automator-shortcut.md",
+      "markdownContent": "# macOS Automator Screenshot Shortcut\n\nConfiguration of a macOS Automator workflow that captures screenshots and triggers the artifact processing pipeline. The shortcut is bound to Cmd+Shift+A for quick access.\n\nThe workflow:\n1. Captures the current screen\n2. Saves to a temporary location\n3. Invokes the Node.js processing script\n4. Moves the processed artifact to the appropriate week/category folder",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-18T11:20:00Z"
+    },
+    {
+      "id": "artifact-005",
+      "name": "post-commit-hook-setup",
+      "title": "Git Post-Commit Hook Configuration",
+      "categoryId": "cat-2024-47-code",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "1-Code",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/post-commit-hook-setup.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/1-Code/post-commit-hook-setup.md",
+      "markdownContent": "# Git Post-Commit Hook Configuration\n\nSetup of a git post-commit hook that automatically captures commit information and generates artifact summaries. The hook is installed via a shell script that symlinks to the main processing pipeline.\n\nFeatures:\n- Extracts commit message, author, and diff\n- Sends data to the Mastra agent for analysis\n- Creates markdown summary in the appropriate week folder",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-17T09:30:00Z"
+    },
+    {
+      "id": "artifact-006",
+      "name": "npm-build-output",
+      "title": "NPM Build Process Output",
+      "categoryId": "cat-2024-47-terminal",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "2-Terminal",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/2-Terminal/npm-build-output.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/2-Terminal/npm-build-output.md",
+      "markdownContent": "# NPM Build Process Output\n\nTerminal output showing a successful npm build of the artifact summarization engine. The build completed in 4.2 seconds with no errors or warnings.\n\nBuild statistics:\n- 47 modules compiled\n- Bundle size: 2.3MB (gzipped: 680KB)\n- TypeScript compilation: success",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-19T15:00:00Z"
+    },
+    {
+      "id": "artifact-007",
+      "name": "agent-orchestration-diagram",
+      "title": "Multi-Agent Orchestration Architecture",
+      "categoryId": "cat-2024-47-arch",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "4-Architecture",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/4-Architecture/agent-orchestration-diagram.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/4-Architecture/agent-orchestration-diagram.md",
+      "markdownContent": "# Multi-Agent Orchestration Architecture\n\nArchitectural diagram showing how multiple AI agents coordinate to process different artifact types. The system uses a dispatcher pattern where incoming artifacts are routed to specialized agents based on content type.\n\n## Agent Types\n- **Screenshot Agent**: Analyzes visual content, extracts text via OCR, identifies UI patterns\n- **Commit Agent**: Parses git diffs, summarizes code changes, links to related artifacts\n- **Context Agent**: Builds narrative connections between artifacts within a week\n\n## Data Flow\n1. Artifact enters the system via automation trigger\n2. Dispatcher determines artifact type\n3. Specialized agent processes and generates summary\n4. Context agent enriches with weekly narrative\n5. Final artifact saved to folder structure",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-17T14:00:00Z"
+    },
+    {
+      "id": "artifact-008",
+      "name": "openai-integration-test",
+      "title": "OpenAI API Integration Testing",
+      "categoryId": "cat-2024-47-ai",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "5-AI_Agents",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/openai-integration-test.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/openai-integration-test.md",
+      "markdownContent": "# OpenAI API Integration Testing\n\nTesting the OpenAI GPT-4 Vision integration for screenshot analysis. The test validates that the API correctly interprets visual content and generates accurate, contextual summaries.\n\nTest results:\n- Image upload: ✓\n- Vision analysis: ✓\n- Summary generation: ✓\n- Token usage: 1,247 tokens\n- Response time: 3.2s",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-20T10:30:00Z"
+    },
+    {
+      "id": "artifact-009",
+      "name": "mastra-agent-config",
+      "title": "Mastra Agent Configuration File",
+      "categoryId": "cat-2024-47-ai",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "5-AI_Agents",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/mastra-agent-config.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/mastra-agent-config.md",
+      "markdownContent": "# Mastra Agent Configuration File\n\nConfiguration file for the Mastra AI agent framework. This YAML file defines agent behaviors, model selection, and processing parameters.\n\nKey settings:\n- Model: gpt-4-vision-preview\n- Temperature: 0.3 (for consistent outputs)\n- Max tokens: 2000\n- Retry attempts: 3",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-18T09:00:00Z"
+    },
+    {
+      "id": "artifact-010",
+      "name": "weekly-summary-generation",
+      "title": "Automated Weekly Summary Generation",
+      "categoryId": "cat-2024-47-ai",
+      "weekId": "week-2024-47",
+      "weekName": "Week_47_Nov17-Nov23",
+      "categoryName": "5-AI_Agents",
+      "imagePath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/weekly-summary-generation.png",
+      "markdownPath": "/artifacts/2024/Week_47_Nov17-Nov23/5-AI_Agents/weekly-summary-generation.md",
+      "markdownContent": "# Automated Weekly Summary Generation\n\nThe weekly summary agent that runs every Sunday at midnight, compiling all artifacts from the week into a cohesive narrative. The agent analyzes patterns, identifies key themes, and generates a markdown summary.\n\nThis week's themes:\n- Heavy focus on AI agent infrastructure\n- Git integration work completed\n- macOS automation implemented\n- 13 artifacts captured across 4 categories",
+      "fileTypes": [".png", ".md"],
+      "createdAt": "2024-11-21T00:05:00Z"
+    }
+  ],
+  "currentView": {
+    "type": "folder",
+    "viewMode": "grid",
+    "selectedFolderId": "cat-2024-47-code",
+    "breadcrumbs": [
+      { "id": "root", "name": "Artifacts", "type": "root" },
+      { "id": "week-2024-47", "name": "Week_47_Nov17-Nov23", "type": "week" },
+      { "id": "cat-2024-47-code", "name": "1-Code", "type": "category" }
+    ]
+  }
+}
