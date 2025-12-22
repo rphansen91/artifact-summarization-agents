@@ -1,4 +1,4 @@
-import { FileImage } from 'lucide-react'
+import { useMemo } from 'react'
 import type { Artifact } from './types'
 
 interface ArtifactDetailProps {
@@ -6,6 +6,27 @@ interface ArtifactDetailProps {
 }
 
 export function ArtifactDetail({ artifact }: ArtifactDetailProps) {
+  // Extract title from markdown H1 or fall back to artifact name
+  const { title, contentWithoutTitle } = useMemo(() => {
+    const lines = artifact.markdownContent.split('\n')
+    const h1Index = lines.findIndex(line => line.trim().startsWith('# '))
+
+    if (h1Index !== -1) {
+      const titleLine = lines[h1Index].trim()
+      const extractedTitle = titleLine.slice(2)
+      const remainingLines = [...lines.slice(0, h1Index), ...lines.slice(h1Index + 1)]
+      return {
+        title: extractedTitle,
+        contentWithoutTitle: remainingLines.join('\n')
+      }
+    }
+
+    return {
+      title: artifact.name,
+      contentWithoutTitle: artifact.markdownContent
+    }
+  }, [artifact.markdownContent, artifact.name])
+
   // Simple markdown renderer for headings, paragraphs, lists, and bold
   const renderMarkdown = (content: string) => {
     const lines = content.split('\n')
@@ -29,21 +50,8 @@ export function ArtifactDetail({ artifact }: ArtifactDetailProps) {
     lines.forEach((line, index) => {
       const trimmed = line.trim()
 
-      // H1
-      if (trimmed.startsWith('# ')) {
-        flushList()
-        elements.push(
-          <h1
-            key={index}
-            className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-4"
-            style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-          >
-            {trimmed.slice(2)}
-          </h1>
-        )
-      }
       // H2
-      else if (trimmed.startsWith('## ')) {
+      if (trimmed.startsWith('## ')) {
         flushList()
         elements.push(
           <h2
@@ -53,6 +61,19 @@ export function ArtifactDetail({ artifact }: ArtifactDetailProps) {
           >
             {trimmed.slice(3)}
           </h2>
+        )
+      }
+      // H3
+      else if (trimmed.startsWith('### ')) {
+        flushList()
+        elements.push(
+          <h3
+            key={index}
+            className="text-base font-semibold text-zinc-700 dark:text-zinc-300 mt-4 mb-2"
+            style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+          >
+            {trimmed.slice(4)}
+          </h3>
         )
       }
       // List item
@@ -87,13 +108,13 @@ export function ArtifactDetail({ artifact }: ArtifactDetailProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with title from markdown */}
       <div className="space-y-2">
         <h1
-          className="text-2xl font-bold text-zinc-900 dark:text-zinc-100"
+          className="text-2xl font-bold text-emerald-600 dark:text-emerald-400"
           style={{ fontFamily: 'Space Grotesk, sans-serif' }}
         >
-          {artifact.name}
+          {title}
         </h1>
         <p
           className="text-sm text-zinc-500"
@@ -122,75 +143,24 @@ export function ArtifactDetail({ artifact }: ArtifactDetailProps) {
         ))}
       </div>
 
-      {/* Two-column layout for image and markdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Image preview card */}
-        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
-          {/* Window chrome */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-            </div>
-            <span
-              className="text-xs text-zinc-500 ml-2 truncate"
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
-            >
-              {artifact.name}.png
-            </span>
-          </div>
-
-          {/* Image content */}
-          <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-zinc-100 via-zinc-200 to-zinc-300 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950">
-            {artifact.imagePath ? (
-              <img
-                src={`artifact-file://${artifact.imagePath}`}
-                alt={artifact.name}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
-                }}
-              />
-            ) : null}
-            <div className={`text-center ${artifact.imagePath ? 'hidden' : ''}`}>
-              <div className="relative inline-block">
-                <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full" />
-                <FileImage className="w-16 h-16 text-zinc-400 dark:text-zinc-600 relative" />
-              </div>
-              <p
-                className="text-xs text-zinc-500 dark:text-zinc-600 mt-3"
-                style={{ fontFamily: 'JetBrains Mono, monospace' }}
-              >
-                Screenshot preview
-              </p>
-            </div>
-          </div>
+      {/* Image preview */}
+      {artifact.imagePath && (
+        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+          <img
+            src={`artifact-file://${artifact.imagePath}`}
+            alt={title}
+            className="w-full h-auto"
+            onError={(e) => {
+              e.currentTarget.parentElement?.classList.add('hidden')
+            }}
+          />
         </div>
+      )}
 
-        {/* Markdown preview card */}
-        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
-          {/* Window chrome */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-            </div>
-            <span
-              className="text-xs text-zinc-500 ml-2 truncate"
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
-            >
-              {artifact.name}.md
-            </span>
-          </div>
 
-          {/* Markdown content */}
-          <div className="p-6 max-h-[500px] overflow-y-auto">
-            {renderMarkdown(artifact.markdownContent)}
-          </div>
-        </div>
+      {/* Markdown content */}
+      <div className="prose prose-zinc dark:prose-invert max-w-none">
+        {renderMarkdown(contentWithoutTitle)}
       </div>
     </div>
   )

@@ -41,7 +41,10 @@ export function ArtifactBrowser({
   return (
     <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950">
       {/* Header bar */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30">
+      <header
+        className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30 relative z-20"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
         <Breadcrumbs
           items={currentView.breadcrumbs}
           onNavigate={onNavigateBreadcrumb}
@@ -61,7 +64,7 @@ export function ArtifactBrowser({
               `}
               title="Grid view"
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-4 h-4 pointer-events-none" />
             </button>
             <button
               onClick={() => handleViewModeToggle('list')}
@@ -74,7 +77,7 @@ export function ArtifactBrowser({
               `}
               title="List view"
             >
-              <List className="w-4 h-4" />
+              <List className="w-4 h-4 pointer-events-none" />
             </button>
           </div>
         )}

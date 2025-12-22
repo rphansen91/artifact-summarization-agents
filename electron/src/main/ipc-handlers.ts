@@ -677,9 +677,18 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
 
 // Register custom protocol for serving artifact images
 export function registerArtifactProtocol(): void {
-  protocol.handle('artifact-file', (request) => {
+  protocol.handle('artifact-file', async (request) => {
     const filePath = decodeURIComponent(request.url.replace('artifact-file://', ''));
-    return net.fetch(`file://${filePath}`);
+    console.log('[Protocol] Loading artifact file:', filePath);
+
+    try {
+      const response = await net.fetch(`file://${filePath}`);
+      console.log('[Protocol] File loaded successfully:', filePath);
+      return response;
+    } catch (err) {
+      console.error('[Protocol] Failed to load file:', filePath, err);
+      throw err;
+    }
   });
 }
 

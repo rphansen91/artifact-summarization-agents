@@ -1,7 +1,21 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, protocol } from 'electron';
 import * as path from 'path';
 import { startMastraServer, stopMastraServer, checkMastraRunning } from './mastra';
 import { registerIPCHandlers, registerArtifactProtocol } from './ipc-handlers';
+
+// Register custom protocol scheme BEFORE app is ready
+// This is required for the protocol to work in secure contexts
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'artifact-file',
+    privileges: {
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: true,
+      stream: true,
+    },
+  },
+]);
 
 let mainWindow: BrowserWindow | null = null;
 
