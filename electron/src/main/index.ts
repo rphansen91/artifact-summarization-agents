@@ -91,8 +91,17 @@ function cleanup(): void {
 }
 
 app.whenReady().then(async () => {
-  console.log('Starting Artifact Viewer...');
+  console.log('Starting Artifact Engine...');
   console.log('Running in', isDev ? 'development' : 'production', 'mode');
+
+  // Set app name (needed for dev mode to show correct name in dock/menu)
+  app.setName('Artifact Engine');
+
+  // Set dock icon on macOS (needed for dev mode)
+  if (process.platform === 'darwin' && app.dock) {
+    const iconPath = path.join(__dirname, '..', '..', '..', 'resources', 'icons', 'png', '512x512.png');
+    app.dock.setIcon(iconPath);
+  }
 
   // Register custom protocol for artifact images
   registerArtifactProtocol();
