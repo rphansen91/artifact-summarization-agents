@@ -22,6 +22,7 @@ export interface AppConfig {
   artifactsFolder: string;
   apiKey: string;
   setupComplete: boolean;
+  screenshotAutomation: boolean;
 }
 
 // Browse types
@@ -96,6 +97,12 @@ export interface WeekResult {
   error?: string;
 }
 
+export interface ScreenshotDialogResult {
+  action: 'process' | 'skip';
+  notes: string;
+  imagePath: string;
+}
+
 export interface ElectronAPI {
   platform: string;
 
@@ -126,6 +133,9 @@ export interface ElectronAPI {
   // Contextualize
   getWeeks: () => Promise<WeeksResult>;
   getWeekById: (weekId: string) => Promise<WeekResult>;
+
+  // Screenshot dialog
+  submitScreenshotDialog: (result: ScreenshotDialogResult) => void;
 }
 
 // Expose APIs to the renderer process
@@ -159,6 +169,10 @@ const electronAPI: ElectronAPI = {
   // Contextualize
   getWeeks: () => ipcRenderer.invoke('get-weeks'),
   getWeekById: (weekId: string) => ipcRenderer.invoke('get-week-by-id', weekId),
+
+  // Screenshot dialog
+  submitScreenshotDialog: (result: ScreenshotDialogResult) =>
+    ipcRenderer.send('screenshot-dialog-result', result),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

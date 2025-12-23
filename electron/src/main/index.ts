@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, protocol } from 'electron';
 import * as path from 'path';
 import { startMastraServer, stopMastraServer, checkMastraRunning } from './mastra';
-import { registerIPCHandlers, registerArtifactProtocol } from './ipc-handlers';
+import { registerIPCHandlers, registerArtifactProtocol, initializeScreenshotAutomation } from './ipc-handlers';
 
 // Register custom protocol scheme BEFORE app is ready
 // This is required for the protocol to work in secure contexts
@@ -110,6 +110,9 @@ app.whenReady().then(async () => {
 
   // Register IPC handlers
   registerIPCHandlers();
+
+  // Initialize screenshot automation if previously enabled
+  initializeScreenshotAutomation();
 
   try {
     // Check if Mastra is already running

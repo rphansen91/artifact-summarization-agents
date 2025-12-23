@@ -13,6 +13,12 @@ export default defineConfig({
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'screenshot-dialog': resolve(__dirname, 'screenshot-dialog.html'),
+      },
+    },
   },
   resolve: {
     alias: {

@@ -4,6 +4,12 @@ import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
 import { checkMastraRunning, getMastraPort } from './mastra';
+import {
+  startDesktopWatcher,
+  stopDesktopWatcher,
+  isDesktopWatcherRunning,
+  setDesktopWatcherEnabled,
+} from './desktop-watcher';
 
 // Types for artifacts browsing
 interface FolderNode {
@@ -76,6 +82,7 @@ interface AppConfig {
   artifactsFolder: string;
   apiKey: string;
   setupComplete: boolean;
+  screenshotAutomation: boolean;
 }
 
 // Path to store configuration
@@ -102,6 +109,7 @@ function loadConfig(): AppConfig {
     artifactsFolder: '',
     apiKey: '',
     setupComplete: false,
+    screenshotAutomation: false,
   };
 }
 
@@ -145,12 +153,6 @@ const SKIP_DIRS = new Set([
 function getHookTemplatePath(): string {
   // From electron/dist/main/main/, go up 4 levels to project root
   return path.join(__dirname, '..', '..', '..', '..', '.git-template', 'hooks', 'post-commit');
-}
-
-// Path to the artifacts script
-function getArtifactsScriptPath(): string {
-  // From electron/dist/main/main/, go up 4 levels to project root
-  return path.join(__dirname, '..', '..', '..', '..', 'scripts', 'artifacts-categorize-file.sh');
 }
 
 // Check if our post-commit hook is installed
@@ -263,71 +265,16 @@ function removeGitHook(repoPath: string): { success: boolean; error?: string } {
   }
 }
 
-// Setup macOS Folder Action using launchd
+// Setup desktop watcher (in-app file watching, no launchd needed)
 function setupFolderAction(): { success: boolean; error?: string; path?: string } {
-  if (process.platform !== 'darwin') {
-    return { success: false, error: 'Folder Actions are only supported on macOS' };
-  }
-
   try {
-    const scriptPath = getArtifactsScriptPath();
-    const plistName = 'com.artifacts.desktopwatcher';
-    const launchAgentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
-    const plistPath = path.join(launchAgentsDir, `${plistName}.plist`);
-    const desktopPath = path.join(os.homedir(), 'Desktop');
-
-    // Check if script exists
-    if (!fs.existsSync(scriptPath)) {
-      return { success: false, error: 'Artifacts script not found' };
-    }
-
-    // Ensure LaunchAgents directory exists
-    if (!fs.existsSync(launchAgentsDir)) {
-      fs.mkdirSync(launchAgentsDir, { recursive: true });
-    }
-
-    // Create launchd plist
-    const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>${plistName}</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>${scriptPath}</string>
-    </array>
-    <key>WatchPaths</key>
-    <array>
-        <string>${desktopPath}</string>
-    </array>
-    <key>RunAtLoad</key>
-    <false/>
-    <key>StandardOutPath</key>
-    <string>/tmp/artifacts-watcher.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/artifacts-watcher.error.log</string>
-</dict>
-</plist>`;
-
-    // Write plist file
-    fs.writeFileSync(plistPath, plistContent);
-
-    // Unload if already loaded, then load
-    try {
-      execSync(`launchctl unload "${plistPath}" 2>/dev/null || true`, { stdio: 'ignore' });
-    } catch {
-      // Ignore unload errors
-    }
-
-    try {
-      execSync(`launchctl load "${plistPath}"`, { stdio: 'inherit' });
-    } catch (loadErr) {
-      return { success: false, error: `Failed to load launch agent: ${(loadErr as Error).message}` };
-    }
-
-    return { success: true, path: plistPath };
+    console.log('[Folder Action] Starting desktop watcher...');
+    startDesktopWatcher();
+    saveConfig({ screenshotAutomation: true });
+    console.log('[Folder Action] Desktop watcher started');
+    return { success: true, path: path.join(os.homedir(), 'Desktop') };
   } catch (err) {
+    console.error('[Folder Action] Failed to start desktop watcher:', err);
     return { success: false, error: (err as Error).message };
   }
 }
@@ -818,34 +765,28 @@ export function registerIPCHandlers(): void {
     }
   });
 
-  // Check folder action status
+  // Check folder action status (now uses in-app desktop watcher)
   ipcMain.handle('get-folder-action-status', async (): Promise<{ installed: boolean }> => {
-    if (process.platform !== 'darwin') {
-      return { installed: false };
-    }
-    const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', 'com.artifacts.desktopwatcher.plist');
-    return { installed: fs.existsSync(plistPath) };
+    return { installed: isDesktopWatcherRunning() };
   });
 
-  // Remove folder action
+  // Remove folder action (stop desktop watcher)
   ipcMain.handle('remove-folder-action', async (): Promise<{ success: boolean; error?: string }> => {
-    if (process.platform !== 'darwin') {
-      return { success: false, error: 'Folder Actions are only supported on macOS' };
-    }
-
     try {
-      const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', 'com.artifacts.desktopwatcher.plist');
+      stopDesktopWatcher();
+      saveConfig({ screenshotAutomation: false });
 
-      if (fs.existsSync(plistPath)) {
-        // Unload the launch agent
-        try {
-          execSync(`launchctl unload "${plistPath}"`, { stdio: 'ignore' });
-        } catch {
-          // Ignore unload errors
+      // Also clean up old launchd plist if it exists
+      if (process.platform === 'darwin') {
+        const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', 'com.artifacts.desktopwatcher.plist');
+        if (fs.existsSync(plistPath)) {
+          try {
+            execSync(`launchctl unload "${plistPath}"`, { stdio: 'ignore' });
+          } catch {
+            // Ignore unload errors
+          }
+          fs.unlinkSync(plistPath);
         }
-
-        // Remove the plist file
-        fs.unlinkSync(plistPath);
       }
 
       return { success: true };
@@ -879,4 +820,20 @@ export function registerIPCHandlers(): void {
     }
     return { success: true, week };
   });
+}
+
+// Initialize screenshot automation based on saved config
+export function initializeScreenshotAutomation(): void {
+  const config = loadConfig();
+  if (config.screenshotAutomation) {
+    console.log('[Init] Screenshot automation enabled in config, starting watcher...');
+    try {
+      startDesktopWatcher();
+      console.log('[Init] Desktop watcher started');
+    } catch (err) {
+      console.error('[Init] Failed to start desktop watcher:', err);
+    }
+  } else {
+    console.log('[Init] Screenshot automation disabled in config');
+  }
 }
