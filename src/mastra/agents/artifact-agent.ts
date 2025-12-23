@@ -38,7 +38,7 @@ export const artifactAgent = new Agent({
   model: 'openai/gpt-4o',
   memory: new Memory({
     storage: new LibSQLStore({
-      url: 'file:../mastra.db',
+      url: process.env.MASTRA_DB_PATH || 'file:../mastra.db',
     }),
   }),
 });

@@ -102,6 +102,9 @@ export interface ElectronAPI {
 
   // Server status
   getMastraStatus: () => Promise<MastraStatus>;
+  startMastraServer: () => Promise<OperationResult>;
+  stopMastraServer: () => Promise<OperationResult>;
+  restartMastraServer: () => Promise<OperationResult>;
 
   // Configuration
   selectFolder: () => Promise<OperationResult>;

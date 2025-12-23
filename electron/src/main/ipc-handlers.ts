@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { checkMastraRunning, getMastraPort } from './mastra';
+import { checkMastraRunning, getMastraPort, startMastraServer, stopMastraServer, restartMastraServer } from './mastra';
 import {
   startDesktopWatcher,
   stopDesktopWatcher,
@@ -711,6 +711,39 @@ export function registerIPCHandlers(): void {
       running,
       port: getMastraPort(),
     };
+  });
+
+  // Start Mastra server
+  ipcMain.handle('start-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
+    console.log('[IPC] Starting Mastra server');
+    try {
+      await startMastraServer();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
+
+  // Restart Mastra server (used when API key changes)
+  ipcMain.handle('restart-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
+    console.log('[IPC] Restarting Mastra server');
+    try {
+      await restartMastraServer();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
+
+  // Stop Mastra server
+  ipcMain.handle('stop-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
+    console.log('[IPC] Stopping Mastra server');
+    try {
+      stopMastraServer();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
+    }
   });
 
   // Select folder dialog

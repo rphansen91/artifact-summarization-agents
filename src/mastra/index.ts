@@ -10,13 +10,12 @@ import { commitAnalysisWorkflow } from './workflows/commit-analysis-workflow';
 import { weatherAgent } from './agents/weather-agent';
 import { artifactAgent } from './agents/artifact-agent';
 
-
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, artifactAnalysisWorkflow, autoArtifactAnalysisWorkflow, weekSummaryWorkflow, commitAnalysisWorkflow },
   agents: { weatherAgent, artifactAgent },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
-    url: "file:../../store/mastra.db",
+    url: process.env.MASTRA_DB_PATH || 'file:../../store/mastra.db',
   }),
   logger: new PinoLogger({
     name: 'Mastra',

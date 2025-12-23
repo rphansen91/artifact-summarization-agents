@@ -38,7 +38,7 @@ export function Step2ApiKey({
           className="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Your Anthropic API key enables AI-powered analysis and contextualization of your artifacts.
+          Your OpenAI API key enables AI-powered analysis and contextualization of your artifacts.
         </p>
       </div>
 
@@ -101,14 +101,14 @@ export function Step2ApiKey({
         {/* Get API key link */}
         <div className="text-center">
           <a
-            href="https://console.anthropic.com/api-keys"
+            href="https://platform.openai.com/api-keys"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400
               hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            Don't have an API key? Get one from Anthropic
+            Don't have an API key? Get one from OpenAI
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
@@ -121,7 +121,7 @@ export function Step2ApiKey({
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
           <strong className="text-zinc-700 dark:text-zinc-300">Your key is stored locally.</strong>{' '}
-          It never leaves your machine and is only used to communicate with Anthropic's API for artifact analysis.
+          It never leaves your machine and is only used to communicate with OpenAI's API for artifact analysis.
         </p>
       </div>
     </div>

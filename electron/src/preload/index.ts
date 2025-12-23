@@ -119,6 +119,9 @@ export interface ElectronAPI {
 
   // Server status
   getMastraStatus: () => Promise<MastraStatus>;
+  startMastraServer: () => Promise<OperationResult>;
+  stopMastraServer: () => Promise<OperationResult>;
+  restartMastraServer: () => Promise<OperationResult>;
 
   // Configuration
   selectFolder: () => Promise<OperationResult>;
@@ -155,6 +158,9 @@ const electronAPI: ElectronAPI = {
 
   // Server status
   getMastraStatus: () => ipcRenderer.invoke('get-mastra-status'),
+  startMastraServer: () => ipcRenderer.invoke('start-mastra-server'),
+  stopMastraServer: () => ipcRenderer.invoke('stop-mastra-server'),
+  restartMastraServer: () => ipcRenderer.invoke('restart-mastra-server'),
 
   // Configuration
   selectFolder: () => ipcRenderer.invoke('select-folder'),

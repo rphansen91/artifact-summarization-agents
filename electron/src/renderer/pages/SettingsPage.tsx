@@ -79,6 +79,8 @@ export function SettingsPage() {
       const result = await window.electronAPI.saveApiKey(apiKeyInput.trim())
       if (result.success) {
         setApiKey(apiKeyInput.trim())
+        // Restart Mastra server to pick up the new API key
+        await window.electronAPI.restartMastraServer()
       }
     } finally {
       setSavingApiKey(false)
@@ -133,6 +135,13 @@ export function SettingsPage() {
     }
     setIsResetting(true)
     try {
+      // Stop desktop automation if running
+      if (automationInstalled) {
+        await window.electronAPI.removeFolderAction()
+      }
+      // Stop Mastra server
+      await window.electronAPI.stopMastraServer()
+      // Reset configuration
       const result = await window.electronAPI.resetConfig()
       if (result.success) {
         navigate('/setup')
@@ -236,7 +245,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                  Anthropic API Key
+                  OpenAI API Key
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   Powers AI analysis and summarization
@@ -284,12 +293,12 @@ export function SettingsPage() {
               </button>
             </div>
             <a
-              href="https://console.anthropic.com/api-keys"
+              href="https://platform.openai.com/api-keys"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
             >
-              Get an API key from Anthropic
+              Get an API key from OpenAI
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>

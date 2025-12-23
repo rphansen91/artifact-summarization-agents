@@ -24,7 +24,7 @@ const defaultSteps: SetupStep[] = [
     id: 'api-key',
     stepNumber: 2,
     title: 'API Key',
-    description: 'Connect your Anthropic API key',
+    description: 'Connect your OpenAI API key',
     isComplete: false,
     isActive: false,
   },
@@ -194,6 +194,15 @@ export function SetupPage() {
         setSteps(prev => prev.map(step =>
           step.id === 'api-key' ? { ...step, isComplete: true } : step
         ))
+        // Start Mastra server with the new API key
+        const mastraStatus = await window.electronAPI.getMastraStatus()
+        if (mastraStatus.running) {
+          // Server is already running, restart it to pick up the new key
+          await window.electronAPI.restartMastraServer()
+        } else {
+          // Server is not running, start it
+          await window.electronAPI.startMastraServer()
+        }
       }
     } catch (err) {
       console.error('Failed to save API key:', err)
