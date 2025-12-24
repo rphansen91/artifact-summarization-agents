@@ -10,3 +10,15 @@ export type {
   UseMastraChatOptions,
   UseMastraChatReturn,
 } from './useMastraChat'
+
+export {
+  useArtifactsQuery,
+  useArtifactCount,
+  useInvalidateArtifacts,
+  ARTIFACTS_QUERY_KEY,
+} from './useArtifactsQuery'
+export type {
+  ArtifactsResult,
+  UseArtifactsQueryOptions,
+  UseArtifactsQueryReturn,
+} from './useArtifactsQuery'

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Camera,
@@ -15,6 +15,7 @@ import {
   Settings,
   ChevronRight
 } from 'lucide-react'
+import { useArtifactsQuery } from '../hooks'
 
 interface GitRepository {
   name: string
@@ -31,6 +32,44 @@ export function CapturePage() {
   const [isInstallingAutomation, setIsInstallingAutomation] = useState(false)
 
   const isMac = window.electronAPI?.platform === 'darwin'
+
+  // Watch for new artifacts
+  const { artifacts } = useArtifactsQuery({
+    refetchInterval: 2000, // Poll every 2 seconds on capture page for faster detection
+    refetchOnWindowFocus: true,
+  })
+
+  // Track artifact count to detect new artifacts
+  const artifactCountRef = useRef<number | null>(null)
+  const hasInitializedRef = useRef(false)
+
+  // Detect new artifacts and redirect to browse
+  useEffect(() => {
+    // Skip if still loading initial data
+    if (artifacts.length === 0 && !hasInitializedRef.current) {
+      return
+    }
+
+    // Initialize the count on first load
+    if (artifactCountRef.current === null) {
+      artifactCountRef.current = artifacts.length
+      hasInitializedRef.current = true
+      return
+    }
+
+    // Check if a new artifact was added
+    if (artifacts.length > artifactCountRef.current) {
+      // Find the newest artifact (first one, assuming sorted by date desc)
+      const newestArtifact = artifacts[0]
+      if (newestArtifact) {
+        // Navigate to browse with the week of the new artifact
+        navigate(`/browse?weekId=${encodeURIComponent(newestArtifact.weekId)}`)
+      }
+    }
+
+    // Update the count
+    artifactCountRef.current = artifacts.length
+  }, [artifacts, navigate])
 
   useEffect(() => {
     async function loadStatus() {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import type { FolderNode, Artifact, CurrentView, ViewMode, Breadcrumb } from '../components/browse/types'
+import { useArtifactsQuery } from '../hooks'
 
 interface BrowseContextValue {
   folderTree: FolderNode[]
@@ -15,6 +16,7 @@ interface BrowseContextValue {
   onNavigateBreadcrumb: (breadcrumbId: string) => void
   onToggleViewMode: (mode: ViewMode) => void
   onStartChat: (weekId: string) => void
+  refetch: () => void
 }
 
 const BrowseContext = createContext<BrowseContextValue | null>(null)
@@ -34,10 +36,22 @@ interface BrowseProviderProps {
 export function BrowseProvider({ children }: BrowseProviderProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Use React Query for artifacts data
+  const {
+    folderTree: queryFolderTree,
+    artifacts,
+    isLoading,
+    error,
+    refetch,
+  } = useArtifactsQuery({
+    refetchInterval: 5000, // Poll every 5 seconds for new artifacts
+    refetchOnWindowFocus: true,
+  })
+
+  // Maintain local folder tree state for expansion tracking
   const [folderTree, setFolderTree] = useState<FolderNode[]>([])
-  const [artifacts, setArtifacts] = useState<Artifact[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
   const [currentView, setCurrentView] = useState<CurrentView>({
     type: 'folder',
     viewMode: 'grid',
@@ -46,29 +60,33 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
   const initialWeekId = useRef(searchParams.get('weekId'))
   const hasInitialNavigated = useRef(false)
 
-  // Load artifacts from the main process
+  // Sync query folder tree to local state, preserving expansion state
   useEffect(() => {
-    async function loadArtifacts() {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const result = await window.electronAPI.getArtifacts()
-        if (result.success) {
-          setFolderTree(result.folderTree || [])
-          setArtifacts(result.artifacts || [])
-        } else {
-          setError(result.error || 'Failed to load artifacts')
+    if (queryFolderTree.length > 0) {
+      setFolderTree(prevTree => {
+        // If no previous tree, just use the query result
+        if (prevTree.length === 0) {
+          return queryFolderTree
         }
-      } catch (err) {
-        setError((err as Error).message)
-      } finally {
-        setIsLoading(false)
-      }
-    }
 
-    loadArtifacts()
-  }, [])
+        // Merge expansion state from previous tree
+        const mergeExpansionState = (newNodes: FolderNode[], oldNodes: FolderNode[]): FolderNode[] => {
+          return newNodes.map(newNode => {
+            const oldNode = oldNodes.find(n => n.id === newNode.id)
+            return {
+              ...newNode,
+              isExpanded: oldNode?.isExpanded ?? newNode.isExpanded,
+              children: newNode.children && oldNode?.children
+                ? mergeExpansionState(newNode.children, oldNode.children)
+                : newNode.children,
+            }
+          })
+        }
+
+        return mergeExpansionState(queryFolderTree, prevTree)
+      })
+    }
+  }, [queryFolderTree])
 
   // Navigate to initial week from URL params after loading, or auto-select most recent week
   useEffect(() => {
@@ -360,6 +378,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     onNavigateBreadcrumb,
     onToggleViewMode,
     onStartChat,
+    refetch,
   }
 
   return (
