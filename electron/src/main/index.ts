@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell, protocol } from 'electron';
 import * as path from 'path';
 import { startMastraServer, stopMastraServer, checkMastraRunning } from './mastra';
 import { registerIPCHandlers, registerArtifactProtocol, initializeScreenshotAutomation } from './ipc-handlers';
+import { mainLogger as log, cleanOldLogs } from './logger';
 
 // Register custom protocol scheme BEFORE app is ready
 // This is required for the protocol to work in secure contexts
@@ -19,7 +20,7 @@ protocol.registerSchemesAsPrivileged([
 
 let mainWindow: BrowserWindow | null = null;
 
-const isDev = !app.isPackaged;
+const isDev = process.env.NODE_ENV === 'production' ? false : !app.isPackaged;
 
 // Set app name early (before ready) for macOS dock tooltip
 if (process.platform === 'darwin') {
@@ -77,6 +78,7 @@ function createWindow(): void {
   });
 
   // Load the app
+  log.info({ isDev }, 'Loading app');
   if (isDev) {
     // In dev mode, load from Vite dev server
     mainWindow.loadURL('http://localhost:5173');
@@ -96,8 +98,11 @@ function cleanup(): void {
 }
 
 app.whenReady().then(async () => {
-  console.log('Starting Artifact Engine...');
-  console.log('Running in', isDev ? 'development' : 'production', 'mode');
+  log.info('Starting Artifact Engine...');
+  log.info({ mode: isDev ? 'development' : 'production' }, 'Running in mode');
+
+  // Clean up old log files on startup
+  cleanOldLogs(7);
 
   // Set dock icon on macOS (needed for dev mode)
   if (process.platform === 'darwin' && app.dock) {
@@ -119,14 +124,14 @@ app.whenReady().then(async () => {
     const mastraRunning = await checkMastraRunning();
 
     if (mastraRunning) {
-      console.log('Mastra server already running on port 6700');
+      log.info('Mastra server already running on port 6700');
     } else {
-      console.log('Starting Mastra server...');
+      log.info('Starting Mastra server...');
       await startMastraServer();
-      console.log('Mastra server started');
+      log.info('Mastra server started');
     }
   } catch (err) {
-    console.error('Failed to start Mastra server:', err);
+    log.error({ err }, 'Failed to start Mastra server');
     // Continue anyway - the app can still function without Mastra for some features
   }
 

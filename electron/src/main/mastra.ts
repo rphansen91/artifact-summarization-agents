@@ -1,8 +1,12 @@
 import { spawn, ChildProcess } from 'child_process';
+import { app } from 'electron';
 import * as path from 'path';
 import * as http from 'http';
 import * as os from 'os';
 import * as fs from 'fs';
+import { mastraLogger as log } from './logger';
+
+const isDev = process.env.NODE_ENV === 'production' ? false : !app.isPackaged;
 
 // Load configuration for env vars
 function loadMastraConfig(): { apiKey: string; artifactsFolder: string } {
@@ -17,9 +21,30 @@ function loadMastraConfig(): { apiKey: string; artifactsFolder: string } {
       };
     }
   } catch (err) {
-    console.error('[Mastra] Failed to load config:', err);
+    log.error({ err }, 'Failed to load config');
   }
   return { apiKey: '', artifactsFolder: '' };
+}
+
+// Get the path to the bundled Node.js binary (for production)
+function getNodePath(): string {
+  if (isDev) {
+    return 'node'; // Use system node in development
+  }
+  // In production, use the bundled Node.js binary
+  const nodeBinPath = path.join(process.resourcesPath, 'node', 'bin', 'node');
+  log.info({ nodeBinPath }, 'Using bundled Node.js');
+  return nodeBinPath;
+}
+
+// Get the path to the Mastra server directory
+function getMastraServerPath(): string {
+  if (isDev) {
+    // In dev mode, use the project root for npm run dev
+    return path.join(__dirname, '..', '..', '..', '..');
+  }
+  // In production, use the bundled Mastra output
+  return path.join(process.resourcesPath, 'mastra');
 }
 
 let mastraProcess: ChildProcess | null = null;
@@ -46,8 +71,6 @@ export function checkMastraRunning(): Promise<boolean> {
 
 export function startMastraServer(): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Project root is four levels up from electron/dist/main/main/
-    const projectRoot = path.join(__dirname, '..', '..', '..', '..');
     const homeDir = os.homedir();
     const desktopPath = path.join(homeDir, 'Desktop');
 
@@ -71,27 +94,61 @@ export function startMastraServer(): Promise<void> {
       OPENAI_API_KEY: config.apiKey,
     };
 
-    console.log('[Mastra] Starting server from:', projectRoot);
-    console.log('[Mastra] Environment:', {
+    log.info({
       PORT: mastraEnv.PORT,
       MASTRA_DB_PATH: mastraEnv.MASTRA_DB_PATH,
       TARGET_PATH: mastraEnv.TARGET_PATH,
       DESKTOP_PATH: mastraEnv.DESKTOP_PATH,
       CONTAINER_DESKTOP_PATH: mastraEnv.CONTAINER_DESKTOP_PATH,
-    });
+    }, 'Environment configured');
 
-    mastraProcess = spawn('npm', ['run', 'dev'], {
-      cwd: projectRoot,
-      shell: true,
-      env: mastraEnv,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    if (isDev) {
+      // Development mode: use npm run dev
+      const projectRoot = getMastraServerPath();
+      log.info({ projectRoot }, 'Starting dev server');
+
+      mastraProcess = spawn('npm', ['run', 'dev'], {
+        cwd: projectRoot,
+        shell: true,
+        env: mastraEnv,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } else {
+      // Production mode: run bundled Mastra server with bundled Node
+      const nodePath = getNodePath();
+      const mastraPath = getMastraServerPath();
+      const indexPath = path.join(mastraPath, 'index.mjs');
+      const instrumentationPath = path.join(mastraPath, 'instrumentation.mjs');
+
+      log.info({ nodePath, mastraPath, indexPath }, 'Starting production server');
+
+      // Check if files exist
+      if (!fs.existsSync(nodePath)) {
+        reject(new Error(`Node binary not found at: ${nodePath}`));
+        return;
+      }
+      if (!fs.existsSync(indexPath)) {
+        reject(new Error(`Mastra index.mjs not found at: ${indexPath}`));
+        return;
+      }
+
+      mastraProcess = spawn(nodePath, [
+        `--import=${instrumentationPath}`,
+        indexPath
+      ], {
+        cwd: mastraPath,
+        env: mastraEnv,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    }
 
     let resolved = false;
 
     mastraProcess.stdout?.on('data', (data: Buffer) => {
-      const output = data.toString();
-      console.log('[Mastra]', output);
+      const output = data.toString().trim();
+      if (output) {
+        log.debug(output);
+      }
 
       // Check if Mastra is ready (look for port binding message)
       if (!resolved && (output.includes('6700') || output.includes('ready') || output.includes('listening'))) {
@@ -101,11 +158,14 @@ export function startMastraServer(): Promise<void> {
     });
 
     mastraProcess.stderr?.on('data', (data: Buffer) => {
-      console.error('[Mastra Error]', data.toString());
+      const output = data.toString().trim();
+      if (output) {
+        log.error(output);
+      }
     });
 
     mastraProcess.on('error', (err) => {
-      console.error('[Mastra] Failed to start:', err);
+      log.error({ err }, 'Failed to start server');
       if (!resolved) {
         resolved = true;
         reject(err);
@@ -113,7 +173,7 @@ export function startMastraServer(): Promise<void> {
     });
 
     mastraProcess.on('exit', (code) => {
-      console.log('[Mastra] Process exited with code:', code);
+      log.info({ code }, 'Server process exited');
       mastraProcess = null;
     });
 
@@ -121,7 +181,7 @@ export function startMastraServer(): Promise<void> {
     setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        console.log('[Mastra] Startup timeout reached, assuming ready');
+        log.warn('Startup timeout reached, assuming ready');
         resolve();
       }
     }, 15000);
@@ -130,7 +190,7 @@ export function startMastraServer(): Promise<void> {
 
 export function stopMastraServer(): void {
   if (mastraProcess) {
-    console.log('[Mastra] Stopping server...');
+    log.info('Stopping server...');
     mastraProcess.kill('SIGTERM');
     mastraProcess = null;
   }
@@ -141,12 +201,12 @@ export function isMastraRunning(): boolean {
 }
 
 export async function restartMastraServer(): Promise<void> {
-  console.log('[Mastra] Restarting server...');
+  log.info('Restarting server...');
   stopMastraServer();
 
   // Wait a moment for the process to fully terminate
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   await startMastraServer();
-  console.log('[Mastra] Server restarted');
+  log.info('Server restarted');
 }

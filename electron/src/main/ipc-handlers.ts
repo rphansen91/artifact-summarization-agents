@@ -10,6 +10,7 @@ import {
   isDesktopWatcherRunning,
   setDesktopWatcherEnabled,
 } from './desktop-watcher';
+import { ipcLogger as log } from './logger';
 
 // Types for artifacts browsing
 interface FolderNode {
@@ -103,7 +104,7 @@ function loadConfig(): AppConfig {
       return JSON.parse(data);
     }
   } catch (err) {
-    console.error('[Config] Failed to load config:', err);
+    log.error({ err }, 'Failed to load config');
   }
   return {
     artifactsFolder: '',
@@ -210,7 +211,7 @@ async function scanGitReposRecursive(
     }
   } catch (err) {
     // Silently skip directories we can't read (permission errors, etc.)
-    console.log(`[Scan] Skipping ${directory}:`, (err as Error).message);
+    log.debug({ directory, error: (err as Error).message }, 'Skipping directory');
   }
 }
 
@@ -268,13 +269,13 @@ function removeGitHook(repoPath: string): { success: boolean; error?: string } {
 // Setup desktop watcher (in-app file watching, no launchd needed)
 function setupFolderAction(): { success: boolean; error?: string; path?: string } {
   try {
-    console.log('[Folder Action] Starting desktop watcher...');
+    log.info('Starting desktop watcher...');
     startDesktopWatcher();
     saveConfig({ screenshotAutomation: true });
-    console.log('[Folder Action] Desktop watcher started');
+    log.info('Desktop watcher started');
     return { success: true, path: path.join(os.homedir(), 'Desktop') };
   } catch (err) {
-    console.error('[Folder Action] Failed to start desktop watcher:', err);
+    log.error({ err }, 'Failed to start desktop watcher');
     return { success: false, error: (err as Error).message };
   }
 }
@@ -392,7 +393,7 @@ async function scanArtifactsFolder(): Promise<ArtifactsResult> {
               categoryArtifacts.push(artifact);
               artifacts.push(artifact);
             } catch (err) {
-              console.error(`[Artifacts] Error reading ${mdPath}:`, err);
+              log.error({ err, mdPath }, 'Error reading artifact');
             }
           }
 
@@ -421,7 +422,7 @@ async function scanArtifactsFolder(): Promise<ArtifactsResult> {
 
     return { success: true, folderTree, artifacts };
   } catch (err) {
-    console.error('[Artifacts] Error scanning folder:', err);
+    log.error({ err }, 'Error scanning artifacts folder');
     return { success: false, error: (err as Error).message };
   }
 }
@@ -526,7 +527,7 @@ function readWeekSummary(weekPath: string): WeekSummary {
       stats: defaultStats, // We'll calculate these from artifacts
     }
   } catch (err) {
-    console.error(`[Weeks] Error reading summary ${summaryPath}:`, err)
+    log.error({ err, summaryPath }, 'Error reading summary')
     return {
       status: 'pending',
       generatedAt: null,
@@ -638,7 +639,7 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
 
     return { success: true, weeks }
   } catch (err) {
-    console.error('[Weeks] Error scanning folder:', err)
+    log.error({ err }, 'Error scanning weeks folder')
     return { success: false, error: (err as Error).message }
   }
 }
@@ -647,14 +648,14 @@ async function scanWeeksFolder(): Promise<WeeksResult> {
 export function registerArtifactProtocol(): void {
   protocol.handle('artifact-file', async (request) => {
     const filePath = decodeURIComponent(request.url.replace('artifact-file://', ''));
-    console.log('[Protocol] Loading artifact file:', filePath);
+    log.debug({ filePath }, 'Loading artifact file');
 
     try {
       const response = await net.fetch(`file://${filePath}`);
-      console.log('[Protocol] File loaded successfully:', filePath);
+      log.debug({ filePath }, 'File loaded successfully');
       return response;
     } catch (err) {
-      console.error('[Protocol] Failed to load file:', filePath, err);
+      log.error({ err, filePath }, 'Failed to load file');
       throw err;
     }
   });
@@ -667,12 +668,12 @@ export function registerIPCHandlers(): void {
     const homeDir = os.homedir();
     const repos: GitRepository[] = [];
 
-    console.log('[IPC] Scanning for git repos in:', homeDir);
+    log.info({ homeDir }, 'Scanning for git repos');
     const startTime = Date.now();
 
     await scanGitReposRecursive(homeDir, repos, 4);
 
-    console.log(`[IPC] Found ${repos.length} repos in ${Date.now() - startTime}ms`);
+    log.info({ count: repos.length, durationMs: Date.now() - startTime }, 'Git repos scan complete');
 
     // Sort by name
     return repos.sort((a, b) => a.name.localeCompare(b.name));
@@ -688,19 +689,19 @@ export function registerIPCHandlers(): void {
 
   // Install git hook
   ipcMain.handle('install-git-hook', async (_event, repoPath: string) => {
-    console.log('[IPC] Installing git hook to:', repoPath);
+    log.info({ repoPath }, 'Installing git hook');
     return installGitHook(repoPath);
   });
 
   // Remove git hook
   ipcMain.handle('remove-git-hook', async (_event, repoPath: string) => {
-    console.log('[IPC] Removing git hook from:', repoPath);
+    log.info({ repoPath }, 'Removing git hook');
     return removeGitHook(repoPath);
   });
 
   // Setup macOS Folder Action
   ipcMain.handle('setup-folder-action', async () => {
-    console.log('[IPC] Setting up Folder Action');
+    log.info('Setting up Folder Action');
     return setupFolderAction();
   });
 
@@ -715,7 +716,7 @@ export function registerIPCHandlers(): void {
 
   // Start Mastra server
   ipcMain.handle('start-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
-    console.log('[IPC] Starting Mastra server');
+    log.info('Starting Mastra server');
     try {
       await startMastraServer();
       return { success: true };
@@ -726,7 +727,7 @@ export function registerIPCHandlers(): void {
 
   // Restart Mastra server (used when API key changes)
   ipcMain.handle('restart-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
-    console.log('[IPC] Restarting Mastra server');
+    log.info('Restarting Mastra server');
     try {
       await restartMastraServer();
       return { success: true };
@@ -737,7 +738,7 @@ export function registerIPCHandlers(): void {
 
   // Stop Mastra server
   ipcMain.handle('stop-mastra-server', async (): Promise<{ success: boolean; error?: string }> => {
-    console.log('[IPC] Stopping Mastra server');
+    log.info('Stopping Mastra server');
     try {
       stopMastraServer();
       return { success: true };
@@ -780,13 +781,13 @@ export function registerIPCHandlers(): void {
 
   // Save API key
   ipcMain.handle('save-api-key', async (_event, apiKey: string) => {
-    console.log('[IPC] Saving API key');
+    log.info('Saving API key');
     return saveConfig({ apiKey });
   });
 
   // Reset configuration (development only)
   ipcMain.handle('reset-config', async () => {
-    console.log('[IPC] Resetting configuration');
+    log.info('Resetting configuration');
     const configPath = getConfigPath();
     try {
       if (fs.existsSync(configPath)) {
@@ -830,19 +831,19 @@ export function registerIPCHandlers(): void {
 
   // Get artifacts and folder tree
   ipcMain.handle('get-artifacts', async (): Promise<ArtifactsResult> => {
-    console.log('[IPC] Getting artifacts');
+    log.debug('Getting artifacts');
     return scanArtifactsFolder();
   });
 
   // Get weeks for contextualize
   ipcMain.handle('get-weeks', async (): Promise<WeeksResult> => {
-    console.log('[IPC] Getting weeks');
+    log.debug('Getting weeks');
     return scanWeeksFolder();
   });
 
   // Get a single week by ID
   ipcMain.handle('get-week-by-id', async (_event, weekId: string): Promise<{ success: boolean; week?: Week; error?: string }> => {
-    console.log('[IPC] Getting week by ID:', weekId);
+    log.debug({ weekId }, 'Getting week by ID');
     const result = await scanWeeksFolder();
     if (!result.success) {
       return { success: false, error: result.error };
@@ -859,14 +860,14 @@ export function registerIPCHandlers(): void {
 export function initializeScreenshotAutomation(): void {
   const config = loadConfig();
   if (config.screenshotAutomation) {
-    console.log('[Init] Screenshot automation enabled in config, starting watcher...');
+    log.info('Screenshot automation enabled in config, starting watcher...');
     try {
       startDesktopWatcher();
-      console.log('[Init] Desktop watcher started');
+      log.info('Desktop watcher started');
     } catch (err) {
-      console.error('[Init] Failed to start desktop watcher:', err);
+      log.error({ err }, 'Failed to start desktop watcher');
     }
   } else {
-    console.log('[Init] Screenshot automation disabled in config');
+    log.info('Screenshot automation disabled in config');
   }
 }

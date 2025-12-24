@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain, app } from 'electron';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { watcherLogger as log } from './logger';
 
 let watcher: fs.FSWatcher | null = null;
 let isEnabled = false;
@@ -9,7 +10,8 @@ const processedFiles = new Set<string>();
 let debounceTimer: NodeJS.Timeout | null = null;
 let dialogWindow: BrowserWindow | null = null;
 
-const isDev = !app.isPackaged;
+
+const isDev = process.env.NODE_ENV === 'production' ? false : !app.isPackaged;
 
 // Check if a file is a screenshot based on name
 function isScreenshot(filename: string): boolean {
@@ -118,7 +120,7 @@ function showScreenshotDialog(filePath: string): Promise<{ action: string; notes
 async function processScreenshot(filePath: string): Promise<void> {
   // Skip if already processed
   if (processedFiles.has(filePath)) {
-    console.log('[DesktopWatcher] Already processed:', filePath);
+    log.debug({ filePath }, 'Already processed');
     return;
   }
 
@@ -131,14 +133,14 @@ async function processScreenshot(filePath: string): Promise<void> {
     entries.slice(0, 50).forEach((f) => processedFiles.delete(f));
   }
 
-  console.log('[DesktopWatcher] New screenshot detected:', filePath);
+  log.info({ filePath }, 'New screenshot detected');
 
   // Wait a moment for the file to be fully written
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Verify file still exists
   if (!fs.existsSync(filePath)) {
-    console.log('[DesktopWatcher] File no longer exists:', filePath);
+    log.warn({ filePath }, 'File no longer exists');
     return;
   }
 
@@ -147,7 +149,7 @@ async function processScreenshot(filePath: string): Promise<void> {
     const { action, notes } = await showScreenshotDialog(filePath);
 
     if (action === 'skip') {
-      console.log('[DesktopWatcher] User skipped screenshot');
+      log.info('User skipped screenshot');
       return;
     }
 
@@ -159,7 +161,7 @@ async function processScreenshot(filePath: string): Promise<void> {
       },
     };
 
-    console.log('[DesktopWatcher] Calling workflow API...');
+    log.info('Calling workflow API...');
     const response = await fetch(
       'http://localhost:6700/api/workflows/autoArtifactAnalysisWorkflow/start-async',
       {
@@ -170,15 +172,15 @@ async function processScreenshot(filePath: string): Promise<void> {
     );
 
     const data = (await response.json()) as { status?: string };
-    console.log('[DesktopWatcher] API response:', data);
+    log.debug({ data }, 'API response');
 
     if (data.status === 'success') {
-      console.log('[DesktopWatcher] Screenshot processed successfully!');
+      log.info('Screenshot processed successfully');
     } else {
-      console.log('[DesktopWatcher] Processing failed:', data);
+      log.warn({ data }, 'Processing failed');
     }
   } catch (err) {
-    console.error('[DesktopWatcher] Error processing screenshot:', err);
+    log.error({ err }, 'Error processing screenshot');
   }
 }
 
@@ -214,7 +216,7 @@ function scanForNewScreenshots(desktopPath: string): void {
         }
       }
     } catch (err) {
-      console.error('[DesktopWatcher] Error scanning:', err);
+      log.error({ err }, 'Error scanning');
     }
   }, 500);
 }
@@ -222,19 +224,19 @@ function scanForNewScreenshots(desktopPath: string): void {
 // Start watching the Desktop folder
 export function startDesktopWatcher(): void {
   if (watcher) {
-    console.log('[DesktopWatcher] Already running');
+    log.info('Already running');
     return;
   }
 
   const desktopPath = path.join(os.homedir(), 'Desktop');
-  console.log('[DesktopWatcher] Starting watcher on:', desktopPath);
+  log.info({ desktopPath }, 'Starting watcher');
 
   try {
     watcher = fs.watch(desktopPath, { persistent: true }, (eventType, filename) => {
       if (!isEnabled) return;
       if (!filename) return;
 
-      console.log('[DesktopWatcher] Event:', eventType, filename);
+      log.debug({ eventType, filename }, 'File event');
 
       if (eventType === 'rename' && isScreenshot(filename)) {
         // 'rename' is triggered for new files on macOS
@@ -248,13 +250,13 @@ export function startDesktopWatcher(): void {
     });
 
     watcher.on('error', (error) => {
-      console.error('[DesktopWatcher] Error:', error);
+      log.error({ error }, 'Watcher error');
     });
 
-    console.log('[DesktopWatcher] Ready and watching');
+    log.info('Ready and watching');
     isEnabled = true;
   } catch (err) {
-    console.error('[DesktopWatcher] Failed to start:', err);
+    log.error({ err }, 'Failed to start');
     throw err;
   }
 }
@@ -273,7 +275,7 @@ export function stopDesktopWatcher(): void {
       dialogWindow.close();
       dialogWindow = null;
     }
-    console.log('[DesktopWatcher] Stopped');
+    log.info('Stopped');
   }
 }
 
@@ -285,5 +287,5 @@ export function isDesktopWatcherRunning(): boolean {
 // Enable/disable processing (watcher still runs but doesn't process)
 export function setDesktopWatcherEnabled(enabled: boolean): void {
   isEnabled = enabled;
-  console.log('[DesktopWatcher] Enabled:', enabled);
+  log.info({ enabled }, 'Enabled state changed');
 }

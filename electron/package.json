@@ -6,13 +6,17 @@
   "scripts": {
     "dev": "concurrently -k \"vite\" \"tsc -w -p tsconfig.main.json\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "vite build && tsc -p tsconfig.main.json",
-    "preview": "npm run build && electron .",
+    "preview": "npm run build && NODE_ENV=production electron --trace-warnings .",
+    "build:mastra": "cd .. && pnpm run build",
+    "download:node": "node scripts/download-node.js",
+    "prepackage": "npm run build:mastra && npm run download:node",
     "package": "npm run build && electron-builder",
     "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@types/react-router-dom": "^5.3.3",
+    "electron-log": "^5.4.3",
     "lucide-react": "^0.562.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -42,6 +46,22 @@
     "files": [
       "dist/**/*",
       "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../.mastra/output",
+        "to": "mastra",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "resources/node",
+        "to": "node",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "mac": {
       "category": "public.app-category.developer-tools",
