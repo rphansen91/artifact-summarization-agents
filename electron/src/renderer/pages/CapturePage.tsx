@@ -62,8 +62,8 @@ export function CapturePage() {
       // Find the newest artifact (first one, assuming sorted by date desc)
       const newestArtifact = artifacts[0]
       if (newestArtifact) {
-        // Navigate to browse with the week of the new artifact
-        navigate(`/browse?weekId=${encodeURIComponent(newestArtifact.weekId)}`)
+        // Navigate to browse with the specific artifact
+        navigate(`/browse?artifactId=${encodeURIComponent(newestArtifact.id)}`)
       }
     }
 

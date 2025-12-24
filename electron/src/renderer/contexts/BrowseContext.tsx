@@ -58,6 +58,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     breadcrumbs: [{ id: 'root', name: 'Artifacts', type: 'root' }],
   })
   const initialWeekId = useRef(searchParams.get('weekId'))
+  const initialArtifactId = useRef(searchParams.get('artifactId'))
   const hasInitialNavigated = useRef(false)
 
   // Sync query folder tree to local state, preserving expansion state
@@ -88,10 +89,77 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     }
   }, [queryFolderTree])
 
-  // Navigate to initial week from URL params after loading, or auto-select most recent week
+  // Navigate to initial week/artifact from URL params after loading, or auto-select most recent week
   useEffect(() => {
     if (!isLoading && folderTree.length > 0 && !hasInitialNavigated.current) {
       hasInitialNavigated.current = true
+
+      // Check if we have a specific artifact to navigate to
+      const targetArtifactId = initialArtifactId.current
+      if (targetArtifactId) {
+        const artifact = artifacts.find(a => a.id === targetArtifactId)
+        if (artifact) {
+          // Find the week and year for this artifact
+          let weekNode: FolderNode | null = null
+          let yearNode: FolderNode | null = null
+
+          for (const year of folderTree) {
+            if (year.children) {
+              const week = year.children.find(w => w.id === artifact.weekId)
+              if (week) {
+                weekNode = week
+                yearNode = year
+                break
+              }
+            }
+          }
+
+          if (weekNode && yearNode) {
+            // Set up breadcrumbs for artifact view
+            const breadcrumbs: Breadcrumb[] = [
+              { id: 'root', name: 'Artifacts', type: 'root' },
+              { id: yearNode.id, name: yearNode.name, type: 'year' },
+              { id: weekNode.id, name: weekNode.name, type: 'week' },
+              { id: artifact.id, name: artifact.name, type: 'artifact' },
+            ]
+
+            setCurrentView({
+              type: 'artifact',
+              viewMode: 'grid',
+              selectedFolderId: artifact.weekId,
+              selectedArtifactId: targetArtifactId,
+              breadcrumbs,
+            })
+
+            // Expand the year and week nodes
+            setFolderTree(prevTree => {
+              return prevTree.map(year => {
+                if (year.id === yearNode!.id) {
+                  return {
+                    ...year,
+                    isExpanded: true,
+                    children: year.children?.map(week => {
+                      if (week.id === artifact.weekId) {
+                        return { ...week, isExpanded: true }
+                      }
+                      return week
+                    }),
+                  }
+                }
+                return year
+              })
+            })
+          }
+
+          // Clear URL params
+          if (searchParams.has('artifactId') || searchParams.has('weekId')) {
+            setSearchParams({})
+          }
+          return
+        }
+      }
+
+      // Fall back to week navigation or auto-select
       let targetWeekId: string | null = initialWeekId.current
       let weekNode: FolderNode | null = null
       let yearNode: FolderNode | null = null
@@ -157,11 +225,11 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
       }
 
       // Clear URL params if there were any
-      if (searchParams.has('weekId')) {
+      if (searchParams.has('weekId') || searchParams.has('artifactId')) {
         setSearchParams({})
       }
     }
-  }, [isLoading, folderTree, searchParams, setSearchParams])
+  }, [isLoading, folderTree, artifacts, searchParams, setSearchParams])
 
   // Find a node in the folder tree
   const findNode = useCallback((nodes: FolderNode[], id: string): FolderNode | null => {
