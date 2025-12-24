@@ -87,6 +87,16 @@ select,
   -webkit-app-region: no-drag;
 }
 
+/* Pointer cursor for interactive elements */
+@layer base {
+  button:not(:disabled),
+  a,
+  [role="button"]:not([aria-disabled="true"]),
+  [onclick] {
+    cursor: pointer;
+  }
+}
+
 /* Apply to headers/toolbars that should be draggable */
 .drag-region {
   -webkit-app-region: drag;
