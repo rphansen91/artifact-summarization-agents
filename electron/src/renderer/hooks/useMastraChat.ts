@@ -4,12 +4,24 @@ import { mastraClient } from '../services/mastraClient'
 import type { ChatThread, ChatMessage as ChatMessageType } from '../components/contextualize/types'
 
 const AGENT_ID = 'artifactAgent'
+const MAIN_THREAD_ID = 'main'
 
 interface MastraMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
   content: string | { type: string; text?: string }[]
   createdAt?: string
+  threadId?: string
+}
+
+// Raw message type for copying (preserves all fields from server)
+interface RawMastraMessage {
+  id: string
+  role: string
+  content: unknown
+  threadId?: string
+  createdAt?: string
+  [key: string]: unknown
 }
 
 interface MastraThread {
@@ -102,7 +114,65 @@ async function fetchMessages(threadId: string): Promise<ChatMessageType[]> {
     }))
 }
 
+// Fetch raw messages from a thread (for copying)
+async function fetchRawMessages(threadId: string): Promise<RawMastraMessage[]> {
+  try {
+    const response = await mastraClient.getThreadMessages(threadId, {
+      agentId: AGENT_ID,
+    })
+    const messageList = response?.messages || response || []
+    return Array.isArray(messageList) ? messageList : []
+  } catch (error) {
+    // Thread might not exist yet, return empty array
+    console.log(`No messages found for thread ${threadId}:`, error)
+    return []
+  }
+}
+
+// Find the 'main' thread ID for a resource
+async function findMainThreadId(resourceId: string): Promise<string | null> {
+  try {
+    const response = await mastraClient.getMemoryThreads({
+      resourceId,
+      agentId: AGENT_ID,
+    })
+    const threadList = response?.threads || response || []
+    const threads = Array.isArray(threadList) ? threadList : []
+
+    // Look for a thread with id 'main' or that was created by workflows
+    const mainThread = threads.find((t: MastraThread) =>
+      t.id === MAIN_THREAD_ID ||
+      t.id === 'main' ||
+      t.metadata?.isWorkflowThread
+    )
+    return mainThread?.id || null
+  } catch (error) {
+    console.log(`Could not find main thread for resource ${resourceId}:`, error)
+    return null
+  }
+}
+
+// Generate a simple unique ID
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
 async function createMemoryThread(resourceId: string, weekId: string): Promise<MastraThread> {
+  // Step 1: Find and fetch messages from the 'main' thread to branch from
+  // First try to find the main thread in the resource's thread list
+  let mainMessages: RawMastraMessage[] = []
+
+  const mainThreadId = await findMainThreadId(resourceId)
+  if (mainThreadId) {
+    mainMessages = await fetchRawMessages(mainThreadId)
+    console.log(`Found ${mainMessages.length} messages in thread ${mainThreadId} to branch`)
+  } else {
+    // Try fetching directly from 'main' thread ID as fallback
+    mainMessages = await fetchRawMessages(MAIN_THREAD_ID)
+    console.log(`Found ${mainMessages.length} messages in main thread (direct) to branch`)
+  }
+
+  // Step 2: Create the new thread
   const response = await mastraClient.createMemoryThread({
     resourceId,
     agentId: AGENT_ID,
@@ -110,9 +180,34 @@ async function createMemoryThread(resourceId: string, weekId: string): Promise<M
     metadata: {
       weekId,
       createdAt: new Date().toISOString(),
+      branchedFrom: MAIN_THREAD_ID,
+      branchedAt: new Date().toISOString(),
+      branchMessageCount: mainMessages.length,
     },
   })
-  return response?.thread || response
+  const newThread = response?.thread || response
+
+  // Step 3: Copy messages from main thread to new thread
+  if (mainMessages.length > 0 && newThread?.id) {
+    const copiedMessages = mainMessages.map((msg) => ({
+      ...msg,
+      id: generateId(),
+      threadId: newThread.id,
+    }))
+
+    try {
+      await mastraClient.saveMessageToMemory({
+        messages: copiedMessages as any,
+        agentId: AGENT_ID,
+      })
+      console.log(`Copied ${copiedMessages.length} messages to new thread ${newThread.id}`)
+    } catch (error) {
+      console.error('Failed to copy messages to new thread:', error)
+      // Continue anyway - the thread was created successfully
+    }
+  }
+
+  return newThread
 }
 
 /**

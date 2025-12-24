@@ -37,7 +37,9 @@ const generateWeekSummary = createStep({
       weekPath = getCurrentWeekPath();
     }
     const categories = await getWeekCategories(weekPath);
-    const weekFolderName = weekPath.split('/').pop() || 'unknown-week';
+    // Extract year and week folder to match chat view resourceId format (e.g., "2025-Week_52_Dec22-Dec28")
+    const pathParts = weekPath.split('/');
+    const weekFolderName = `${pathParts[pathParts.length - 2]}-${pathParts[pathParts.length - 1]}`;
 
     console.log(`Generating summary for: ${weekPath}`);
 
@@ -140,8 +142,8 @@ Format as markdown with clear headings and structure.`;
       },
     ], {
       memory: {
-        resource: 'artifact-analysis',
-        thread: weekPath
+        resource: `week-${weekFolderName}`,
+        thread: 'main'
       }
     });
 

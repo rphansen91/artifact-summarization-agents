@@ -44,7 +44,9 @@ const analyzeCommit = createStep({
 
     // Auto-detect current week path
     const currentWeekPath = getCurrentWeekPath();
-    const weekFolderName = currentWeekPath.split('/').pop() || 'unknown-week';
+    // Extract year and week folder to match chat view resourceId format (e.g., "2025-Week_52_Dec22-Dec28")
+    const pathParts = currentWeekPath.split('/');
+    const weekFolderName = `${pathParts[pathParts.length - 2]}-${pathParts[pathParts.length - 1]}`;
 
     console.log(`Analyzing commit ${inputData.commit_hash} from ${inputData.repo}`);
 
@@ -112,8 +114,8 @@ Focus on technical accuracy and provide insights that would be valuable for proj
         }),
       },
       memory: {
-        resource: 'artifact-analysis',
-        thread: currentWeekPath
+        resource: `week-${weekFolderName}`,
+        thread: 'main'
       }
     });
 

@@ -129,13 +129,17 @@ Focus on technical accuracy and provide specific, actionable insights about what
       }
     }
 
+    // Extract year and week folder to match chat view resourceId format (e.g., "2025-Week_52_Dec22-Dec28")
+    const pathParts = currentWeekPath.split('/');
+    const weekFolderName = `${pathParts[pathParts.length - 2]}-${pathParts[pathParts.length - 1]}`;
+
     const response = await agent.generate(messages, {
       structuredOutput: {
         schema: metadataGenerationSchema,
       },
       memory: {
-        resource: 'artifact-analysis',
-        thread: currentWeekPath
+        resource: `week-${weekFolderName}`,
+        thread: 'main'
       }
     });
 
@@ -177,9 +181,6 @@ Focus on technical accuracy and provide specific, actionable insights about what
     } else {
       console.warn('Image path is not a local file, skipping image copy');
     }
-
-    // Extract week folder name from path
-    const weekFolderName = currentWeekPath.split('/').pop() || 'unknown-week';
 
     // Show Mac notification (non-intrusive)
     try {
