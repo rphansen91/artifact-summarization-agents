@@ -99,7 +99,7 @@ export function FolderTreeNode({
           `}
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          {node.name}
+          {node.name.replace(/_/g, ' ')}
         </span>
 
         {/* Item count badge */}

@@ -31,7 +31,7 @@ export function Breadcrumbs({ items, onNavigate }: BreadcrumbsProps) {
               `}
             >
               {isFirst && <Home className="w-3.5 h-3.5" />}
-              <span className={isLast ? 'font-medium' : ''}>{item.name}</span>
+              <span className={isLast ? 'font-medium' : ''}>{item.name.replace(/_/g, ' ')}</span>
             </button>
           </div>
         )
