@@ -56,16 +56,62 @@ export function getMastraPort(): number {
 
 export function checkMastraRunning(): Promise<boolean> {
   return new Promise((resolve) => {
-    const req = http.get(`http://localhost:${MASTRA_PORT}`, () => {
-      resolve(true);
+    const req = http.get(`http://localhost:${MASTRA_PORT}/health`, (res) => {
+      // Consider it running if we get a 2xx response
+      resolve(res.statusCode !== undefined && res.statusCode >= 200 && res.statusCode < 300);
     });
     req.on('error', () => {
       resolve(false);
     });
-    req.setTimeout(1000, () => {
+    req.setTimeout(2000, () => {
       req.destroy();
       resolve(false);
     });
+  });
+}
+
+/**
+ * Polls the Mastra health endpoint until it responds successfully
+ * @param maxAttempts Maximum number of polling attempts
+ * @param intervalMs Time between polling attempts in milliseconds
+ */
+export function waitForMastraReady(maxAttempts = 30, intervalMs = 500): Promise<boolean> {
+  return new Promise((resolve) => {
+    let attempts = 0;
+
+    const poll = () => {
+      attempts++;
+      log.debug({ attempt: attempts, maxAttempts }, 'Checking Mastra health');
+
+      const req = http.get(`http://localhost:${MASTRA_PORT}/health`, (res) => {
+        if (res.statusCode !== undefined && res.statusCode >= 200 && res.statusCode < 300) {
+          log.info({ attempts }, 'Mastra server is ready');
+          resolve(true);
+        } else {
+          scheduleNextAttempt();
+        }
+      });
+
+      req.on('error', () => {
+        scheduleNextAttempt();
+      });
+
+      req.setTimeout(2000, () => {
+        req.destroy();
+        scheduleNextAttempt();
+      });
+    };
+
+    const scheduleNextAttempt = () => {
+      if (attempts >= maxAttempts) {
+        log.warn({ attempts }, 'Mastra server failed to become ready within timeout');
+        resolve(false);
+      } else {
+        setTimeout(poll, intervalMs);
+      }
+    };
+
+    poll();
   });
 }
 
@@ -142,21 +188,15 @@ export function startMastraServer(): Promise<void> {
       });
     }
 
-    let resolved = false;
-
+    // Log stdout for debugging
     mastraProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString().trim();
       if (output) {
         log.debug(output);
       }
-
-      // Check if Mastra is ready (look for port binding message)
-      if (!resolved && (output.includes('6700') || output.includes('ready') || output.includes('listening'))) {
-        resolved = true;
-        resolve();
-      }
     });
 
+    // Log stderr for debugging
     mastraProcess.stderr?.on('data', (data: Buffer) => {
       const output = data.toString().trim();
       if (output) {
@@ -166,10 +206,7 @@ export function startMastraServer(): Promise<void> {
 
     mastraProcess.on('error', (err) => {
       log.error({ err }, 'Failed to start server');
-      if (!resolved) {
-        resolved = true;
-        reject(err);
-      }
+      reject(err);
     });
 
     mastraProcess.on('exit', (code) => {
@@ -177,14 +214,16 @@ export function startMastraServer(): Promise<void> {
       mastraProcess = null;
     });
 
-    // Fallback timeout - assume started after 15 seconds
-    setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        log.warn('Startup timeout reached, assuming ready');
+    // Wait for the server to be ready by polling the health endpoint
+    log.info('Waiting for Mastra server to become ready...');
+    waitForMastraReady(30, 500).then((ready) => {
+      if (ready) {
+        log.info('Mastra server is now accepting requests');
         resolve();
+      } else {
+        reject(new Error('Mastra server failed to become ready within timeout'));
       }
-    }, 15000);
+    });
   });
 }
 

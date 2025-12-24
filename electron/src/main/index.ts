@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, protocol } from 'electron';
 import * as path from 'path';
-import { startMastraServer, stopMastraServer, checkMastraRunning } from './mastra';
+import { startMastraServer, stopMastraServer, checkMastraRunning, waitForMastraReady } from './mastra';
 import { registerIPCHandlers, registerArtifactProtocol, initializeScreenshotAutomation } from './ipc-handlers';
 import { mainLogger as log, cleanOldLogs } from './logger';
 
@@ -120,15 +120,15 @@ app.whenReady().then(async () => {
   initializeScreenshotAutomation();
 
   try {
-    // Check if Mastra is already running
+    // Check if Mastra is already running and healthy
     const mastraRunning = await checkMastraRunning();
 
     if (mastraRunning) {
-      log.info('Mastra server already running on port 6700');
+      log.info('Mastra server already running and healthy on port 6700');
     } else {
       log.info('Starting Mastra server...');
       await startMastraServer();
-      log.info('Mastra server started');
+      log.info('Mastra server started and ready');
     }
   } catch (err) {
     log.error({ err }, 'Failed to start Mastra server');
