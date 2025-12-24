@@ -44,6 +44,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     breadcrumbs: [{ id: 'root', name: 'Artifacts', type: 'root' }],
   })
   const initialWeekId = useRef(searchParams.get('weekId'))
+  const hasInitialNavigated = useRef(false)
 
   // Load artifacts from the main process
   useEffect(() => {
@@ -69,29 +70,19 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     loadArtifacts()
   }, [])
 
-  // Navigate to initial week from URL params after loading
+  // Navigate to initial week from URL params after loading, or auto-select most recent week
   useEffect(() => {
-    if (!isLoading && folderTree.length > 0 && initialWeekId.current) {
-      // Find the week in the tree
-      let found = false
-      for (const year of folderTree) {
-        if (year.children) {
-          const week = year.children.find(w => w.id === initialWeekId.current)
-          if (week) {
-            found = true
-            break
-          }
-        }
-      }
+    if (!isLoading && folderTree.length > 0 && !hasInitialNavigated.current) {
+      hasInitialNavigated.current = true
+      let targetWeekId: string | null = initialWeekId.current
+      let weekNode: FolderNode | null = null
+      let yearNode: FolderNode | null = null
 
-      if (found) {
-        // Build breadcrumbs and expand tree for the week
-        let weekNode: FolderNode | null = null
-        let yearNode: FolderNode | null = null
-
+      if (targetWeekId) {
+        // Find the week specified in URL params
         for (const year of folderTree) {
           if (year.children) {
-            const week = year.children.find(w => w.id === initialWeekId.current)
+            const week = year.children.find(w => w.id === targetWeekId)
             if (week) {
               weekNode = week
               yearNode = year
@@ -99,48 +90,60 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
             }
           }
         }
-
-        if (weekNode && yearNode) {
-          const breadcrumbs: Breadcrumb[] = [
-            { id: 'root', name: 'Artifacts', type: 'root' },
-            { id: yearNode.id, name: yearNode.name, type: 'year' },
-            { id: weekNode.id, name: weekNode.name, type: 'week' },
-          ]
-
-          setCurrentView({
-            type: 'folder',
-            viewMode: 'grid',
-            selectedFolderId: initialWeekId.current,
-            breadcrumbs,
-          })
-
-          // Expand the year and week nodes
-          setFolderTree(prevTree => {
-            return prevTree.map(year => {
-              if (year.id === yearNode!.id) {
-                return {
-                  ...year,
-                  isExpanded: true,
-                  children: year.children?.map(week => {
-                    if (week.id === initialWeekId.current) {
-                      return { ...week, isExpanded: true }
-                    }
-                    return week
-                  }),
-                }
-              }
-              return year
-            })
-          })
+      } else {
+        // No URL param - auto-select the most recent week (first year's first week)
+        for (const year of folderTree) {
+          if (year.children && year.children.length > 0) {
+            yearNode = year
+            weekNode = year.children[0]
+            targetWeekId = weekNode.id
+            break
+          }
         }
       }
 
-      // Clear the ref so this doesn't run again
-      initialWeekId.current = null
-      // Clear URL params
-      setSearchParams({})
+      if (weekNode && yearNode && targetWeekId) {
+        const breadcrumbs: Breadcrumb[] = [
+          { id: 'root', name: 'Artifacts', type: 'root' },
+          { id: yearNode.id, name: yearNode.name, type: 'year' },
+          { id: weekNode.id, name: weekNode.name, type: 'week' },
+        ]
+
+        setCurrentView({
+          type: 'folder',
+          viewMode: 'grid',
+          selectedFolderId: targetWeekId,
+          breadcrumbs,
+        })
+
+        // Expand the year and week nodes
+        const yearId = yearNode.id
+        const weekId = targetWeekId
+        setFolderTree(prevTree => {
+          return prevTree.map(year => {
+            if (year.id === yearId) {
+              return {
+                ...year,
+                isExpanded: true,
+                children: year.children?.map(week => {
+                  if (week.id === weekId) {
+                    return { ...week, isExpanded: true }
+                  }
+                  return week
+                }),
+              }
+            }
+            return year
+          })
+        })
+      }
+
+      // Clear URL params if there were any
+      if (searchParams.has('weekId')) {
+        setSearchParams({})
+      }
     }
-  }, [isLoading, folderTree, setSearchParams])
+  }, [isLoading, folderTree, searchParams, setSearchParams])
 
   // Find a node in the folder tree
   const findNode = useCallback((nodes: FolderNode[], id: string): FolderNode | null => {
