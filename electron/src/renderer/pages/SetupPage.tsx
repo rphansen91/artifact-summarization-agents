@@ -84,7 +84,6 @@ export function SetupPage() {
       type: 'screenshot',
       description: 'Capture and analyze screenshots automatically',
       isInstalled: false,
-      shortcut: '⌘ + Shift + A',
       platform: getPlatform(),
     },
   ])

@@ -15,7 +15,6 @@ export function Step3Automation({
   onUninstallAutomation
 }: Step3AutomationProps) {
   const isInstalled = workflow?.isInstalled ?? false
-  const shortcut = workflow?.shortcut ?? '⌘ + Shift + A'
 
   const platformName = platform === 'mac' ? 'macOS' : platform === 'windows' ? 'Windows' : 'Linux'
 
@@ -75,14 +74,26 @@ export function Step3Automation({
               </div>
 
               {/* Shortcut display */}
-              <div className="flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                <Command className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span
-                  className="text-lg font-semibold text-emerald-700 dark:text-emerald-300"
-                  style={{ fontFamily: 'JetBrains Mono, monospace' }}
-                >
-                  {shortcut}
-                </span>
+              <div className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-white/50 dark:bg-zinc-900/50">
+                <div className="flex items-center gap-1">
+                  <Command className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span
+                    className="text-base font-semibold text-emerald-700 dark:text-emerald-300"
+                    style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                  >
+                    + Shift + 4
+                  </span>
+                </div>
+                <span className="text-sm text-emerald-600 dark:text-emerald-400">or</span>
+                <div className="flex items-center gap-1">
+                  <Command className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span
+                    className="text-base font-semibold text-emerald-700 dark:text-emerald-300"
+                    style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                  >
+                    + Shift + 3
+                  </span>
+                </div>
               </div>
 
               {/* Uninstall option */}

@@ -98,7 +98,6 @@
       "type": "screenshot",
       "description": "Captures screen via keyboard shortcut, analyzes with AI, and files to appropriate category.",
       "isInstalled": true,
-      "shortcut": "⌘ + Shift + A",
       "platform": "mac"
     },
     {
