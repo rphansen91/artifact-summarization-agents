@@ -35,6 +35,9 @@ export function SettingsPage() {
   const [isScanningRepos, setIsScanningRepos] = useState(false)
   const [savingApiKey, setSavingApiKey] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [showContextMessages, setShowContextMessages] = useState(() => {
+    return localStorage.getItem('dev_showContextMessages') === 'true'
+  })
 
   // Load settings on mount
   useEffect(() => {
@@ -127,6 +130,12 @@ export function SettingsPage() {
         ))
       }
     }
+  }
+
+  const handleToggleContextMessages = () => {
+    const newValue = !showContextMessages
+    setShowContextMessages(newValue)
+    localStorage.setItem('dev_showContextMessages', String(newValue))
   }
 
   const handleResetConfig = async () => {
@@ -453,7 +462,37 @@ export function SettingsPage() {
               </div>
             </div>
           </div>
-          <div className="p-6">
+          <div className="p-6 space-y-6">
+            {/* Show Context Messages Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-red-900 dark:text-red-100">
+                  Show Context Messages
+                </h3>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                  Display week context messages copied from main thread in chat
+                </p>
+              </div>
+              <button
+                onClick={handleToggleContextMessages}
+                className={`
+                  relative w-11 h-6 rounded-full transition-colors
+                  ${showContextMessages
+                    ? 'bg-emerald-500'
+                    : 'bg-zinc-300 dark:bg-zinc-600'
+                  }
+                `}
+              >
+                <span
+                  className={`
+                    absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform
+                    ${showContextMessages ? 'translate-x-5' : 'translate-x-0'}
+                  `}
+                />
+              </button>
+            </div>
+
+            {/* Reset Settings */}
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-red-900 dark:text-red-100">

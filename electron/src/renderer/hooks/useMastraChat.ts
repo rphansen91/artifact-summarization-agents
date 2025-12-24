@@ -33,6 +33,12 @@ interface MastraThread {
   metadata?: Record<string, unknown>
 }
 
+interface ThreadMetadata {
+  branchMessageCount?: number
+  weekId?: string
+  isWorkflowThread?: boolean
+}
+
 export interface UseMastraChatOptions {
   weekId: string
   resourceId?: string
@@ -48,6 +54,7 @@ export interface UseMastraChatReturn {
   loadThreads: () => void
   selectThread: (threadId: string) => void
   createThread: () => Promise<string | null>
+  deleteThread: (threadId: string) => Promise<boolean>
 
   // Message management
   messages: ChatMessageType[]
@@ -86,32 +93,71 @@ async function fetchThreads(resourceId: string): Promise<ChatThread[]> {
   })
 
   const threadList = response?.threads || response || []
-  return (Array.isArray(threadList) ? threadList : []).map((thread: MastraThread) => ({
-    id: thread.id,
-    weekId: resourceId,
-    title: thread.title || 'New conversation',
-    createdAt: thread.createdAt || new Date().toISOString(),
-    updatedAt: thread.updatedAt || new Date().toISOString(),
-    messageCount: (thread.metadata?.messageCount as number) || 0,
-  }))
+  return (Array.isArray(threadList) ? threadList : [])
+    // Filter out the main thread - it's used for context only, not for display
+    .filter((thread: MastraThread) => {
+      const isMainThread = thread.id === MAIN_THREAD_ID ||
+                           thread.id === 'main' ||
+                           thread.metadata?.isWorkflowThread === true
+      return !isMainThread
+    })
+    .map((thread: MastraThread) => ({
+      id: thread.id,
+      weekId: resourceId,
+      title: thread.title || 'New conversation',
+      createdAt: thread.createdAt || new Date().toISOString(),
+      updatedAt: thread.updatedAt || new Date().toISOString(),
+      messageCount: (thread.metadata?.messageCount as number) || 0,
+      branchMessageCount: (thread.metadata?.branchMessageCount as number) || 0,
+      lastContextMessageId: (thread.metadata?.lastContextMessageId as string) || null,
+    }))
 }
 
-async function fetchMessages(threadId: string): Promise<ChatMessageType[]> {
+interface FetchMessagesOptions {
+  lastContextMessageId?: string | null
+  branchMessageCount?: number
+}
+
+async function fetchMessages(threadId: string, options: FetchMessagesOptions = {}): Promise<ChatMessageType[]> {
+  const { lastContextMessageId = null, branchMessageCount = 0 } = options
+
   const response = await mastraClient.getThreadMessages(threadId, {
     agentId: AGENT_ID,
   })
 
   const messageList = response?.messages || response || []
-  return (Array.isArray(messageList) ? messageList : [])
+  const filteredMessages = (Array.isArray(messageList) ? messageList : [])
     .filter((msg: MastraMessage) => msg.role === 'user' || msg.role === 'assistant')
-    .map((msg: MastraMessage) => ({
+
+  // Sort by timestamp ascending (oldest first) for consistent ordering
+  const sortedMessages = [...filteredMessages].sort((a, b) => {
+    const timeA = new Date(a.createdAt || 0).getTime()
+    const timeB = new Date(b.createdAt || 0).getTime()
+    return timeA - timeB
+  })
+
+  // Find the index of the last context message (branch point)
+  const branchPointIndex = lastContextMessageId
+    ? sortedMessages.findIndex(msg => msg.id === lastContextMessageId)
+    : -1
+
+  return sortedMessages.map((msg: MastraMessage, index: number) => {
+    // Check if this is a context message:
+    // 1. Primary: at or before the branch point message (new format)
+    // 2. Fallback: within first branchMessageCount messages (old format for backward compat)
+    const isContext = (branchPointIndex >= 0 && index <= branchPointIndex) ||
+                      (branchPointIndex < 0 && branchMessageCount > 0 && index < branchMessageCount)
+
+    return {
       id: msg.id,
       threadId,
       role: msg.role as 'user' | 'assistant',
       content: getMessageContent(msg.content),
       timestamp: msg.createdAt || new Date().toISOString(),
       referencedArtifacts: [],
-    }))
+      isContextMessage: isContext,
+    }
+  })
 }
 
 // Fetch raw messages from a thread (for copying)
@@ -157,6 +203,7 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
+
 async function createMemoryThread(resourceId: string, weekId: string): Promise<MastraThread> {
   // Step 1: Find and fetch messages from the 'main' thread to branch from
   // First try to find the main thread in the resource's thread list
@@ -172,42 +219,66 @@ async function createMemoryThread(resourceId: string, weekId: string): Promise<M
     console.log(`Found ${mainMessages.length} messages in main thread (direct) to branch`)
   }
 
-  // Step 2: Create the new thread
+  // Step 2: Generate IDs for copied messages - we'll store the last one as the branch point
+  const copiedMessageIds: string[] = mainMessages.map(() => generateId())
+  const lastContextMessageId = copiedMessageIds.length > 0 ? copiedMessageIds[copiedMessageIds.length - 1] : null
+
+  // Build metadata - store the last context message ID as the branch point
+  const threadMetadata = {
+    weekId,
+    createdAt: new Date().toISOString(),
+    branchedFrom: MAIN_THREAD_ID,
+    branchedAt: new Date().toISOString(),
+    branchMessageCount: mainMessages.length,
+    // Store just the last copied message ID - all messages up to this are context
+    lastContextMessageId,
+  }
+
+  // Step 3: Create the new thread
   const response = await mastraClient.createMemoryThread({
     resourceId,
     agentId: AGENT_ID,
     title: `Chat about ${weekId}`,
-    metadata: {
-      weekId,
-      createdAt: new Date().toISOString(),
-      branchedFrom: MAIN_THREAD_ID,
-      branchedAt: new Date().toISOString(),
-      branchMessageCount: mainMessages.length,
-    },
+    metadata: threadMetadata,
   })
   const newThread = response?.thread || response
 
-  // Step 3: Copy messages from main thread to new thread
+  // Step 4: Copy messages from main thread to new thread (in batches to avoid payload size limits)
   if (mainMessages.length > 0 && newThread?.id) {
-    const copiedMessages = mainMessages.map((msg) => ({
+    const copiedMessages = mainMessages.map((msg, index) => ({
       ...msg,
-      id: generateId(),
+      id: copiedMessageIds[index],
       threadId: newThread.id,
     }))
 
-    try {
-      await mastraClient.saveMessageToMemory({
-        messages: copiedMessages as any,
-        agentId: AGENT_ID,
-      })
-      console.log(`Copied ${copiedMessages.length} messages to new thread ${newThread.id}`)
-    } catch (error) {
-      console.error('Failed to copy messages to new thread:', error)
-      // Continue anyway - the thread was created successfully
+    // Batch messages to avoid 413 Payload Too Large errors
+    const BATCH_SIZE = 5
+    let copiedCount = 0
+
+    for (let i = 0; i < copiedMessages.length; i += BATCH_SIZE) {
+      const batch = copiedMessages.slice(i, i + BATCH_SIZE)
+      try {
+        await mastraClient.saveMessageToMemory({
+          messages: batch as any,
+          agentId: AGENT_ID,
+        })
+        copiedCount += batch.length
+      } catch (error) {
+        console.error(`Failed to copy batch ${i / BATCH_SIZE + 1}:`, error)
+        // Continue with remaining batches
+      }
     }
+    console.log(`Copied ${copiedCount}/${copiedMessages.length} messages to new thread ${newThread.id}`)
   }
 
-  return newThread
+  // Ensure metadata is included in the returned thread (Mastra response may not include it)
+  return {
+    ...newThread,
+    metadata: {
+      ...newThread?.metadata,
+      ...threadMetadata,
+    },
+  }
 }
 
 /**
@@ -254,27 +325,35 @@ export function useMastraChat(options: UseMastraChatOptions): UseMastraChatRetur
     }
   }, [threadsError, onError])
 
+  // Get active thread object
+  const activeThread = threads.find(t => t.id === activeThreadId) || null
+
   // Query: Fetch messages for active thread
   const {
     data: serverMessages = [],
     isLoading: isLoadingMessages,
   } = useQuery({
-    queryKey: ['messages', activeThreadId],
-    queryFn: () => fetchMessages(activeThreadId!),
+    queryKey: ['messages', activeThreadId, activeThread?.lastContextMessageId],
+    queryFn: () => {
+      console.log(`[useMastraChat] Fetching messages for thread ${activeThreadId}, lastContextMessageId: ${activeThread?.lastContextMessageId}`)
+      return fetchMessages(activeThreadId!, {
+        lastContextMessageId: activeThread?.lastContextMessageId,
+        branchMessageCount: activeThread?.branchMessageCount || 0,
+      })
+    },
     enabled: !!activeThreadId,
   })
 
   // Combine server messages with optimistic messages
   const messages = [...serverMessages, ...optimisticMessages]
 
-  // Get active thread object
-  const activeThread = threads.find(t => t.id === activeThreadId) || null
-
   // Mutation: Create thread
   const createThreadMutation = useMutation({
     mutationFn: () => createMemoryThread(effectiveResourceId, weekId),
     onSuccess: (thread) => {
       // Add new thread to cache
+      const branchMessageCount = (thread.metadata?.branchMessageCount as number) || 0
+      console.log(`[useMastraChat] Thread created: ${thread.id}, metadata:`, thread.metadata, `branchMessageCount: ${branchMessageCount}`)
       queryClient.setQueryData<ChatThread[]>(
         ['threads', effectiveResourceId],
         (old = []) => [{
@@ -284,6 +363,7 @@ export function useMastraChat(options: UseMastraChatOptions): UseMastraChatRetur
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           messageCount: 0,
+          branchMessageCount,
         }, ...old]
       )
       // Select the new thread
@@ -310,6 +390,37 @@ export function useMastraChat(options: UseMastraChatOptions): UseMastraChatRetur
       return null
     }
   }, [createThreadMutation])
+
+  // Delete a thread
+  const deleteThread = useCallback(async (threadId: string): Promise<boolean> => {
+    try {
+      // Use direct API call since mastraClient doesn't have deleteMemoryThread
+      const response = await fetch(`http://localhost:6700/api/memory/threads/${threadId}?agentId=${AGENT_ID}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete thread: ${response.statusText}`)
+      }
+
+      // Remove from cache
+      queryClient.setQueryData<ChatThread[]>(
+        ['threads', effectiveResourceId],
+        (old = []) => old.filter(t => t.id !== threadId)
+      )
+
+      // If we deleted the active thread, clear selection
+      if (activeThreadId === threadId) {
+        setActiveThreadId(null)
+        setOptimisticMessages([])
+      }
+
+      return true
+    } catch (err) {
+      onError?.(formatError(err))
+      return false
+    }
+  }, [effectiveResourceId, activeThreadId, queryClient, onError])
 
   // Send a message with streaming response
   const sendMessage = useCallback(async (content: string) => {
@@ -444,6 +555,7 @@ export function useMastraChat(options: UseMastraChatOptions): UseMastraChatRetur
     loadThreads: refetchThreads,
     selectThread,
     createThread,
+    deleteThread,
     messages,
     isLoadingMessages,
     isStreaming,

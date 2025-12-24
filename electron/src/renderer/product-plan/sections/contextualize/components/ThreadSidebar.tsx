@@ -6,6 +6,7 @@ interface ThreadSidebarProps {
   activeThreadId: string | null
   onSelectThread?: (threadId: string) => void
   onCreateThread?: () => void
+  onDeleteThread?: (threadId: string) => Promise<boolean>
   onBack?: () => void
 }
 
@@ -30,8 +31,15 @@ export function ThreadSidebar({
   activeThreadId,
   onSelectThread,
   onCreateThread,
+  onDeleteThread,
   onBack
 }: ThreadSidebarProps) {
+  const handleDelete = async (e: React.MouseEvent, threadId: string) => {
+    e.stopPropagation() // Prevent selecting the thread
+    if (window.confirm('Delete this conversation? This cannot be undone.')) {
+      await onDeleteThread?.(threadId)
+    }
+  }
   return (
     <aside className="w-72 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col overflow-hidden">
       {/* Header */}
@@ -105,16 +113,16 @@ export function ThreadSidebar({
           threads.map((thread) => {
             const isActive = thread.id === activeThreadId
             return (
-              <button
+              <div
                 key={thread.id}
-                onClick={() => onSelectThread?.(thread.id)}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                className={`group relative w-full text-left p-3 rounded-lg transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent'
                 }`}
+                onClick={() => onSelectThread?.(thread.id)}
               >
-                <p className={`text-sm font-medium truncate ${
+                <p className={`text-sm font-medium truncate pr-6 ${
                   isActive
                     ? 'text-emerald-700 dark:text-emerald-300'
                     : 'text-zinc-800 dark:text-zinc-200'
@@ -125,7 +133,17 @@ export function ThreadSidebar({
                   <span>{thread.messageCount} messages</span>
                   <span>{formatDate(thread.updatedAt)}</span>
                 </div>
-              </button>
+                {/* Delete button */}
+                <button
+                  onClick={(e) => handleDelete(e, thread.id)}
+                  className="absolute top-2 right-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/50 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                  title="Delete conversation"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
             )
           })
         )}

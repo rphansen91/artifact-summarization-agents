@@ -35,6 +35,7 @@ function formatTime(timestamp: string) {
 
 export function ChatMessage({ message, onViewArtifact }: ChatMessageProps) {
   const isUser = message.role === 'user'
+  const isContextMessage = message.isContextMessage
 
   // Simple markdown-like formatting for bold text
   const formatContent = (content: string) => {
@@ -49,7 +50,7 @@ export function ChatMessage({ message, onViewArtifact }: ChatMessageProps) {
   }
 
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} ${isContextMessage ? 'opacity-60' : ''}`}>
       {/* Avatar */}
       <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
         isUser
@@ -61,11 +62,20 @@ export function ChatMessage({ message, onViewArtifact }: ChatMessageProps) {
 
       {/* Message Content */}
       <div className={`flex-1 max-w-[85%] ${isUser ? 'text-right' : ''}`}>
+        {/* Context message indicator */}
+        {isContextMessage && (
+          <div className={`mb-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Week Context
+          </div>
+        )}
         <div className={`inline-block text-left rounded-2xl px-4 py-3 ${
           isUser
             ? 'bg-emerald-500 dark:bg-emerald-600 text-white rounded-tr-sm'
             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-tl-sm'
-        }`}>
+        } ${isContextMessage ? 'border-2 border-dashed border-amber-400 dark:border-amber-600' : ''}`}>
           {/* Message text with line breaks */}
           <div className="text-sm leading-relaxed whitespace-pre-wrap">
             {formatContent(message.content)}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ChatViewProps } from '../types'
 import { ThreadSidebar } from './ThreadSidebar'
 import { ChatMessage } from './ChatMessage'
@@ -10,6 +10,13 @@ interface ExtendedChatViewProps extends ChatViewProps {
   streamingContent?: string
   /** Whether messages are currently loading */
   isLoadingMessages?: boolean
+  /** Called when user deletes a thread */
+  onDeleteThread?: (threadId: string) => Promise<boolean>
+}
+
+/** Check if dev setting to show context messages is enabled */
+function getShowContextMessagesSetting(): boolean {
+  return localStorage.getItem('dev_showContextMessages') === 'true'
 }
 
 export function ChatView({
@@ -19,6 +26,7 @@ export function ChatView({
   messages,
   onSelectThread,
   onCreateThread,
+  onDeleteThread,
   onSendMessage,
   onViewArtifact,
   onBack,
@@ -28,11 +36,24 @@ export function ChatView({
 }: ExtendedChatViewProps) {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const showContextMessages = getShowContextMessagesSetting()
+
+  // Filter messages based on dev setting - hide context messages unless setting is on
+  const displayMessages = useMemo(() => {
+    const contextCount = messages.filter(msg => msg.isContextMessage).length
+    const nonContextCount = messages.filter(msg => !msg.isContextMessage).length
+    console.log(`[ChatView] Total messages: ${messages.length}, context: ${contextCount}, non-context: ${nonContextCount}, showContextMessages: ${showContextMessages}`)
+
+    if (showContextMessages) {
+      return messages
+    }
+    return messages.filter(msg => !msg.isContextMessage)
+  }, [messages, showContextMessages])
 
   // Auto-scroll to bottom when new messages arrive or streaming updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamingContent])
+  }, [displayMessages, streamingContent])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +72,7 @@ export function ChatView({
         activeThreadId={activeThread?.id ?? null}
         onSelectThread={onSelectThread}
         onCreateThread={onCreateThread}
+        onDeleteThread={onDeleteThread}
         onBack={onBack}
       />
 
@@ -80,7 +102,7 @@ export function ChatView({
                   </div>
                 ) : (
                   <>
-                    {messages.map((message) => (
+                    {displayMessages.map((message) => (
                       <ChatMessage
                         key={message.id}
                         message={message}

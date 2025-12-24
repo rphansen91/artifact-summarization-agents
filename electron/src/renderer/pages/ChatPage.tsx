@@ -41,6 +41,7 @@ export function ChatPage() {
     threadsError,
     selectThread,
     createThread,
+    deleteThread,
     sendMessage,
   } = useMastraChat({
     weekId: weekId || '',
@@ -134,6 +135,7 @@ export function ChatPage() {
       messages={messages}
       onSelectThread={selectThread}
       onCreateThread={createThread}
+      onDeleteThread={deleteThread}
       onSendMessage={sendMessage}
       onViewArtifact={handleViewArtifact}
       onBack={handleBack}

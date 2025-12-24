@@ -81,6 +81,10 @@ export interface ChatThread {
   messageCount: number
   createdAt: string
   updatedAt: string
+  /** Number of messages copied from main thread as context (legacy fallback) */
+  branchMessageCount?: number
+  /** ID of the last context message - all messages up to this are context */
+  lastContextMessageId?: string | null
 }
 
 export interface ChatMessage {
@@ -90,6 +94,8 @@ export interface ChatMessage {
   content: string
   timestamp: string
   referencedArtifacts: ReferencedArtifact[]
+  /** Whether this message was copied from the main thread as context */
+  isContextMessage?: boolean
 }
 
 export interface ReferencedArtifact {

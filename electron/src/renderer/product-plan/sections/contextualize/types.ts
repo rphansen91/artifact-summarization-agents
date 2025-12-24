@@ -35,6 +35,10 @@ export interface ChatThread {
   createdAt: string
   updatedAt: string
   messageCount: number
+  /** Number of messages copied from main thread as context (legacy fallback) */
+  branchMessageCount?: number
+  /** ID of the last context message - all messages up to this are context */
+  lastContextMessageId?: string | null
 }
 
 export interface ReferencedArtifact {
@@ -51,6 +55,8 @@ export interface ChatMessage {
   content: string
   timestamp: string
   referencedArtifacts: ReferencedArtifact[]
+  /** Whether this message was copied from the main thread as context */
+  isContextMessage?: boolean
 }
 
 // =============================================================================
@@ -92,6 +98,8 @@ export interface ChatViewProps {
   onSelectThread?: (threadId: string) => void
   /** Called when user creates a new thread */
   onCreateThread?: () => void
+  /** Called when user deletes a thread */
+  onDeleteThread?: (threadId: string) => Promise<boolean>
   /** Called when user sends a message */
   onSendMessage?: (content: string) => void
   /** Called when user wants to view a referenced artifact */
