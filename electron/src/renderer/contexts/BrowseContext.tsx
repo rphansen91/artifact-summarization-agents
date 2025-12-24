@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import type { FolderNode, Artifact, CurrentView, ViewMode, Breadcrumb } from '../components/browse/types'
 
 interface BrowseContextValue {
@@ -14,6 +14,7 @@ interface BrowseContextValue {
   onSelectArtifact: (artifactId: string) => void
   onNavigateBreadcrumb: (breadcrumbId: string) => void
   onToggleViewMode: (mode: ViewMode) => void
+  onStartChat: (weekId: string) => void
 }
 
 const BrowseContext = createContext<BrowseContextValue | null>(null)
@@ -31,6 +32,7 @@ interface BrowseProviderProps {
 }
 
 export function BrowseProvider({ children }: BrowseProviderProps) {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [folderTree, setFolderTree] = useState<FolderNode[]>([])
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
@@ -337,6 +339,11 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     setCurrentView(prev => ({ ...prev, viewMode: mode }))
   }, [])
 
+  // Navigate to chat for a week
+  const onStartChat = useCallback((weekId: string) => {
+    navigate(`/chat?weekId=${encodeURIComponent(weekId)}`)
+  }, [navigate])
+
   const value: BrowseContextValue = {
     folderTree,
     artifacts,
@@ -349,6 +356,7 @@ export function BrowseProvider({ children }: BrowseProviderProps) {
     onSelectArtifact,
     onNavigateBreadcrumb,
     onToggleViewMode,
+    onStartChat,
   }
 
   return (

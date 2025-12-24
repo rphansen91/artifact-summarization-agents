@@ -12,6 +12,7 @@ export function BrowsePage() {
     onSelectArtifact,
     onNavigateBreadcrumb,
     onToggleViewMode,
+    onStartChat,
   } = useBrowse()
 
   if (isLoading) {
@@ -59,6 +60,7 @@ export function BrowsePage() {
         onSelectArtifact={onSelectArtifact}
         onNavigateBreadcrumb={onNavigateBreadcrumb}
         onToggleViewMode={onToggleViewMode}
+        onStartChat={onStartChat}
       />
     </div>
   )

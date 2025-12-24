@@ -81,12 +81,7 @@ export function AppShell({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto relative">
-        {/* Draggable top bar overlay */}
-        <div
-          className="absolute top-0 left-0 right-0 h-10 z-10"
-          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
-        />
+      <main className="flex-1 overflow-y-auto">
         {children}
       </main>
     </div>

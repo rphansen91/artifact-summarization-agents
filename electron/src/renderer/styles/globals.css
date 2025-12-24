@@ -73,3 +73,21 @@ code, pre, .font-mono {
     color-scheme: dark;
   }
 }
+
+/* Electron window drag regions */
+/* Make all interactive elements non-draggable so they work in drag regions */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[onclick],
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Apply to headers/toolbars that should be draggable */
+.drag-region {
+  -webkit-app-region: drag;
+}

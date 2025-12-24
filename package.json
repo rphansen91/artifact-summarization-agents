@@ -17,6 +17,7 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
+    "@mastra/client-js": "^0.17.2",
     "@mastra/core": "^0.24.5",
     "@mastra/libsql": "^0.16.2",
     "@mastra/loggers": "^0.10.19",

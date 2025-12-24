@@ -33,12 +33,12 @@ export function ThreadSidebar({
   onBack
 }: ThreadSidebarProps) {
   return (
-    <aside className="w-72 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col h-full overflow-hidden">
+    <aside className="w-72 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="shrink-0 p-4 border-b border-zinc-200 dark:border-zinc-800">
+      <header className="shrink-0 p-4 border-b border-zinc-200 dark:border-zinc-800 drag-region">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 px-2 py-1 -ml-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md transition-colors mb-3 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />

@@ -1,11 +1,28 @@
 import { useEffect, useState } from 'react'
 import { HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Settings, Sparkles, FolderOpen } from 'lucide-react'
 import { AppShell, type NavigationItem } from './components/shell'
-import { SetupPage, CapturePage, ContextualizePage, BrowsePage, SettingsPage } from './pages'
+import { SetupPage, CapturePage, ContextualizePage, BrowsePage, SettingsPage, ChatPage } from './pages'
 import { BrowseSidebar } from './components/browse'
 import { BrowseProvider } from './contexts/BrowseContext'
 import './styles/globals.css'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on connection errors
+        if (error instanceof Error && error.message.includes('ERR_CONNECTION_REFUSED')) {
+          return false
+        }
+        return failureCount < 2
+      },
+    },
+  },
+})
 
 // Navigation configuration
 const navItems: Omit<NavigationItem, 'isActive'>[] = [
@@ -112,6 +129,7 @@ function AppContent() {
       <Routes>
         <Route path="/capture" element={<CapturePage />} />
         <Route path="/contextualize" element={<ContextualizePage />} />
+        <Route path="/chat" element={<ChatPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<ContextualizePage />} />
       </Routes>
@@ -121,9 +139,11 @@ function AppContent() {
 
 function App() {
   return (
-    <HashRouter>
-      <AppContent />
-    </HashRouter>
+    <QueryClientProvider client={queryClient}>
+      <HashRouter>
+        <AppContent />
+      </HashRouter>
+    </QueryClientProvider>
   )
 }
 

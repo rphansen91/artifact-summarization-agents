@@ -72,8 +72,7 @@ export function ContextualizePage() {
   )
 
   const handleStartChat = (weekId: string) => {
-    console.log('Start chat for:', weekId)
-    // TODO: Navigate to chat view
+    navigate(`/chat?weekId=${encodeURIComponent(weekId)}`)
   }
 
   if (isLoading) {

@@ -4,3 +4,9 @@ export type {
   UseGenerateSummaryOptions,
   UseGenerateSummaryReturn,
 } from './useGenerateSummary'
+
+export { useMastraChat } from './useMastraChat'
+export type {
+  UseMastraChatOptions,
+  UseMastraChatReturn,
+} from './useMastraChat'

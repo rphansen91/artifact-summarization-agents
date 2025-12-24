@@ -20,6 +20,8 @@ interface ArtifactBrowserContentProps {
   onNavigateBreadcrumb?: (breadcrumbId: string) => void
   /** Called when user toggles between grid and list view */
   onToggleViewMode?: (mode: ViewMode) => void
+  /** Called when user wants to start a chat for a week */
+  onStartChat?: (weekId: string) => void
 }
 
 export function ArtifactBrowser({
@@ -29,7 +31,8 @@ export function ArtifactBrowser({
   onSelectFolder,
   onSelectArtifact,
   onNavigateBreadcrumb,
-  onToggleViewMode
+  onToggleViewMode,
+  onStartChat,
 }: ArtifactBrowserContentProps) {
   // Check if we're viewing a week (last breadcrumb is type 'week')
   const lastBreadcrumb = currentView.breadcrumbs[currentView.breadcrumbs.length - 1]
@@ -66,10 +69,7 @@ export function ArtifactBrowser({
   return (
     <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950">
       {/* Header bar */}
-      <header
-        className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30 relative z-20"
-        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-      >
+      <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30 relative z-20 drag-region">
         <Breadcrumbs
           items={currentView.breadcrumbs}
           onNavigate={onNavigateBreadcrumb}
@@ -117,6 +117,7 @@ export function ArtifactBrowser({
             weekId={weekId}
             weekNode={weekNode}
             onSelectCategory={(categoryId) => onSelectFolder?.(categoryId)}
+            onStartChat={() => onStartChat?.(weekId)}
           />
         ) : currentView.type === 'folder' ? (
           folderArtifacts.length > 0 ? (
