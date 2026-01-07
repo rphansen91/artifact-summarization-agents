@@ -139,7 +139,7 @@ Focus on technical accuracy and provide specific, actionable insights about what
       },
       memory: {
         resource: `week-${weekFolderName}`,
-        thread: 'main'
+        thread: `main-${weekFolderName}`
       }
     });
 

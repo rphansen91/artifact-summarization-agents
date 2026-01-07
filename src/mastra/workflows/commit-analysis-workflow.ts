@@ -115,7 +115,7 @@ Focus on technical accuracy and provide insights that would be valuable for proj
       },
       memory: {
         resource: `week-${weekFolderName}`,
-        thread: 'main'
+        thread: `main-${weekFolderName}`
       }
     });
 

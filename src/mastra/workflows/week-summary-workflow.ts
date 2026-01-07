@@ -143,7 +143,7 @@ Format as markdown with clear headings and structure.`;
     ], {
       memory: {
         resource: `week-${weekFolderName}`,
-        thread: 'main'
+        thread: `main-${weekFolderName}`
       }
     });
 

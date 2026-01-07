@@ -95,9 +95,11 @@ async function fetchThreads(resourceId: string): Promise<ChatThread[]> {
   const threadList = response?.threads || response || []
   return (Array.isArray(threadList) ? threadList : [])
     // Filter out the main thread - it's used for context only, not for display
+    // Main threads can be 'main' (legacy) or 'main-{weekFolderName}' (new format)
     .filter((thread: MastraThread) => {
       const isMainThread = thread.id === MAIN_THREAD_ID ||
                            thread.id === 'main' ||
+                           thread.id.startsWith('main-') ||
                            thread.metadata?.isWorkflowThread === true
       return !isMainThread
     })
@@ -185,10 +187,12 @@ async function findMainThreadId(resourceId: string): Promise<string | null> {
     const threadList = response?.threads || response || []
     const threads = Array.isArray(threadList) ? threadList : []
 
-    // Look for a thread with id 'main' or that was created by workflows
+    // Look for a thread with id starting with 'main' or that was created by workflows
+    // Threads can be 'main' (legacy) or 'main-{weekFolderName}' (new format)
     const mainThread = threads.find((t: MastraThread) =>
       t.id === MAIN_THREAD_ID ||
       t.id === 'main' ||
+      t.id.startsWith('main-') ||
       t.metadata?.isWorkflowThread
     )
     return mainThread?.id || null
